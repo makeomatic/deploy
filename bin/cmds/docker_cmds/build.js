@@ -20,6 +20,11 @@ exports.handler = (argv) => {
   // write temporary dockerfile
   ShellString(dockerfile).to(tmpDockerfile);
 
+  // try running compile before hand
+  if (exec('npm run compile').code !== 0) {
+    echo('failed to run compile');
+  }
+
   // start builder
   const command = `docker build -t ${project} -f ${tmpDockerfile} .`;
   echo(command);
