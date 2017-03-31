@@ -41,7 +41,7 @@
     "nyc": "^10.2.0"
   },
   "files": [
-    "./bin/**/*.js",
-    "./templates"
+    "./bin/**",
+    "./templates/*"
   ]
 }
