@@ -41,8 +41,8 @@ exports.handler = (argv) => {
   // eslint-disable-next-line no-restricted-syntax
   for (const test of testFiles) {
     const basename = path.basename(test, '.js');
-    exec(`docker exec tester /bin/sh -c "${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${mocha} ${test}"`);
-    if (exec.code !== 0) {
+    const run = exec(`docker exec tester /bin/sh -c "${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${mocha} ${test}"`);
+    if (run.code !== 0) {
       echo(`failed to run ${test}, exiting 128...`);
       exit(128);
     }

@@ -42,12 +42,13 @@ exports.handler = (argv) => {
   argv.compose = ShellString(`${compose} -f ${argv.docker_compose}`);
 
   function stopDocker() {
+    const dockerCompose = argv.compose;
     if (argv.no_cleanup !== true) {
       echo('\nAutomatically cleaning up\n');
-      exec(`${compose} stop`);
-      exec(`${compose} rm -f -v`);
+      exec(`${dockerCompose} stop`);
+      exec(`${dockerCompose} rm -f -v`);
     } else {
-      echo(`\nLocal environment detected.\nTo stop containers write:\n\n${compose} stop;\n${compose} rm -f -v;\n`);
+      echo(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} stop;\n${dockerCompose} rm -f -v;\n`);
     }
   }
 
