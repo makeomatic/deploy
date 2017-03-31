@@ -36,7 +36,6 @@ exports.handler = (argv) => {
   const crossEnv = `${argv.root}/cross-env`;
   const nyc = `${argv.root}/nyc`;
   const mocha = `${argv.root}/mocha`;
-  const codecov = `${argv.root}/codecov`;
 
   // eslint-disable-next-line no-restricted-syntax
   for (const test of testFiles) {
@@ -51,6 +50,6 @@ exports.handler = (argv) => {
   // upload codecoverage report
   if (argv.coverage) {
     echo('uploading coverage');
-    exec(codecov);
+    exec('./node_modules/.bin/codecov');
   }
 };
