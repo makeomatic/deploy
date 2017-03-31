@@ -1,0 +1,6 @@
+{
+  "extends": "makeomatic",
+  "rules": {
+    "no-unused-expressions": 0
+  }
+}

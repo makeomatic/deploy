@@ -1,0 +1,31 @@
+{
+  "name": "@makeomatic/deploy",
+  "version": "1.0.0",
+  "description": "Common build and deploy tasks wrapped in a cli",
+  "main": "./bin/cli.js",
+  "repository": "https://github.com/makeomatic/deploy.git",
+  "author": "Vitaly Aminev <v@makeomatic.ca>",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-cli": "^6.24.0",
+    "babel-core": "^6.24.0",
+    "babel-eslint": "^7.2.1",
+    "babel-plugin-istanbul": "^4.1.1",
+    "babel-plugin-transform-strict-mode": "^6.22.0",
+    "cross-env": "^3.2.4",
+    "eslint": "^3.18.0",
+    "eslint-config-makeomatic": "^1.0.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-promise": "^3.5.0",
+    "nyc": "^10.2.0"
+  },
+  "dependencies": {
+    "latest-version": "^3.1.0",
+    "ms-conf": "^3.1.2",
+    "shelljs": "^0.7.7",
+    "yargs": "^7.0.2"
+  },
+  "bin": {
+    "mdep": "./bin/cli.js"
+  }
+}
