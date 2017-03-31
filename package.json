@@ -7,6 +7,7 @@
   "author": "Vitaly Aminev <v@makeomatic.ca>",
   "license": "MIT",
   "scripts": {
+    "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
   },
   "devDependencies": {
