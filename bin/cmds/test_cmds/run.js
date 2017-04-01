@@ -30,7 +30,15 @@ exports.handler = (argv) => {
   }
 
   // easy way to wait for containers, can do improved detection, but it's not generic
-  if (argv.sleep) exec(`sleep ${argv.sleep}`);
+  if (argv.rebuild.length > 0) {
+    echo('rebuilding modules');
+    // eslint-disable-next-line no-restricted-syntax
+    for (const mod of argv.rebuild) {
+      exec(`docker exec tester npm rebuild ${mod}`);
+    }
+  } else if (argv.sleep) {
+    exec(`sleep ${argv.sleep}`);
+  }
 
   // now determine what we need
   const crossEnv = `${argv.root}/cross-env`;

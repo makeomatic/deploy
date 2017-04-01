@@ -57,6 +57,12 @@ exports.builder = yargs => (
       describe: 'binary root path on the tester',
       default: '/src/node_modules/.bin',
     })
+    .option('rebuild', {
+      alias: 'r',
+      describe: 'list modules to rebuild during testing',
+      default: [],
+      array: true,
+    })
 );
 exports.handler = () => {
   npmPath.set();
