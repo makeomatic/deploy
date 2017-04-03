@@ -8,7 +8,9 @@ const { exec, echo, exit, ShellString, rm } = require('shelljs');
 exports.command = 'build';
 exports.desc = 'builds docker image for a project';
 exports.handler = (argv) => {
-  const { project } = argv;
+  require('../docker').handler(argv);
+
+  const { project, mainTag } = argv;
 
   // prepare variables
   const tmpDockerfile = `${process.cwd()}/Dockerfile.${project}`;
@@ -26,7 +28,7 @@ exports.handler = (argv) => {
   }
 
   // start builder
-  const command = `docker build -t ${project} -f ${tmpDockerfile} .`;
+  const command = `docker build -t ${mainTag} -f ${tmpDockerfile} .`;
   echo(command);
   const build = exec(command);
 

@@ -7,9 +7,11 @@ const { exec } = require('shelljs');
 exports.command = 'push';
 exports.desc = 'pushes previously build docker images';
 exports.handler = (argv) => {
-  const { project, tags } = argv;
+  require('../docker').handler(argv);
 
-  [project, ...tags].forEach(tag => (
+  const { mainTag, tags } = argv;
+
+  [mainTag, ...tags].forEach(tag => (
     exec(`docker push ${tag}`)
   ));
 };

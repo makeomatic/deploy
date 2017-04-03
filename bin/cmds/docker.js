@@ -3,7 +3,8 @@
  * @type {String}
  */
 
-exports.command = 'docker <command>';
+exports.called = false;
+exports.command = 'docker';
 exports.desc = 'manages docker lifecycle';
 exports.builder = yargs => (
   yargs.commandDir('docker_cmds')
@@ -26,14 +27,19 @@ exports.builder = yargs => (
     })
 );
 exports.handler = (argv) => {
+  if (exports.called) return;
+
   // prepares variables
   argv.base = `${argv.repository}/${argv.project}`;
   argv.baseTag = argv.include_node ? `${argv.node}-${argv.version}` : argv.version;
-  argv.project = `${argv.base}:${argv.baseTag}`;
+  argv.mainTag = `${argv.base}:${argv.baseTag}`;
   argv.tags = [`${argv.base}:latest`];
 
   // adds extra tag
   if (argv.include_node) {
-    argv.tags.push(`${argv.project}:${argv.node}`);
+    argv.tags.push(`${argv.base}:${argv.node}`);
   }
+
+  // a little bit hacky
+  exports.called = true;
 };
