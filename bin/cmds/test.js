@@ -65,5 +65,6 @@ exports.builder = yargs => (
     })
 );
 exports.handler = () => {
+  console.log('set path');
   npmPath.set();
 };
