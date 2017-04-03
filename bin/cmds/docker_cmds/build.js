@@ -28,7 +28,7 @@ exports.handler = (argv) => {
   }
 
   // start builder
-  const command = `docker build -t ${mainTag} -f ${tmpDockerfile} .`;
+  const command = `docker build --squash -t ${mainTag} -f ${tmpDockerfile} .`;
   echo(command);
   const build = exec(command);
 
