@@ -3,12 +3,15 @@
  * @type {String}
  */
 
+const npmPath = require('npm-path');
 const path = require('path');
 const { exec, echo, which, exit, mkdir, chmod, ShellString } = require('shelljs');
 
 exports.command = 'compose';
 exports.desc = 'installs compose on the system';
 exports.handler = (argv) => {
+  npmPath.set();
+
   // verify if we have compose or not
   let compose = which('docker-compose');
   const version = compose && exec(`${compose} --version`).stdout.match(/\d+\.\d+\.\d+/)[0];
@@ -41,8 +44,14 @@ exports.handler = (argv) => {
   // add link to compose file
   argv.compose = ShellString(`${compose} -f ${argv.docker_compose}`);
 
-  function stopDocker() {
+  function stopDocker(code) {
     const dockerCompose = argv.compose;
+
+    // allows to exec arbitrary code on exit
+    if (argv.on_fail && code !== 0) {
+      exec(argv.on_fail);
+    }
+
     if (argv.no_cleanup !== true) {
       echo('\nAutomatically cleaning up\n');
       exec(`${dockerCompose} stop`);

@@ -3,8 +3,6 @@
  * @type {String}
  */
 
-const npmPath = require('npm-path');
-
 exports.command = 'test <command>';
 exports.desc = 'performs tests in docker';
 exports.builder = yargs => (
@@ -63,7 +61,9 @@ exports.builder = yargs => (
       default: [],
       array: true,
     })
+    .option('on_fail', {
+      alias: 'fail',
+      describe: 'arbitrary code to execute on test failure',
+    })
 );
-exports.handler = () => {
-  npmPath.set();
-};
+exports.handler = () => {};
