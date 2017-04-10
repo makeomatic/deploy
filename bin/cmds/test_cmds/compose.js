@@ -5,6 +5,7 @@
 
 const npmPath = require('npm-path');
 const path = require('path');
+const onDeath = require('death')({ SIGHUP: true, exit: true });
 const { exec, echo, which, exit, mkdir, chmod, ShellString } = require('shelljs');
 
 exports.command = 'compose';
@@ -44,11 +45,11 @@ exports.handler = (argv) => {
   // add link to compose file
   argv.compose = ShellString(`${compose} -f ${argv.docker_compose}`);
 
-  function stopDocker(code) {
+  function stopDocker(signal, code) {
     const dockerCompose = argv.compose;
 
     // allows to exec arbitrary code on exit
-    if (argv.on_fail && code !== 0) {
+    if (argv.on_fail && signal === 'error' && code !== 0) {
       exec(argv.on_fail);
     }
 
@@ -62,5 +63,5 @@ exports.handler = (argv) => {
   }
 
   // put docker-compose up
-  process.on('exit', stopDocker);
+  onDeath(stopDocker);
 };
