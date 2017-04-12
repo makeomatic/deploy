@@ -49,7 +49,7 @@ exports.handler = (argv) => {
     const dockerCompose = argv.compose;
 
     // allows to exec arbitrary code on exit
-    if (argv.on_fail && signal === 'error' && code !== 0) {
+    if (argv.on_fail && signal === 'exit' && code !== 0) {
       exec(argv.on_fail);
     }
 
