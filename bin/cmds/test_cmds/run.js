@@ -50,7 +50,13 @@ exports.handler = (argv) => {
   // eslint-disable-next-line no-restricted-syntax
   for (const test of testFiles) {
     const basename = path.basename(test, '.js');
-    const run = exec(`${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${mocha} ${test}"`);
+    const cmd = `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${mocha} ${test}"`;
+
+    // show command we run
+    echo(cmd);
+
+    // exec it
+    const run = exec(cmd);
     if (run.code !== 0) {
       echo(`failed to run ${test}, exiting 128...`);
       exit(128);
