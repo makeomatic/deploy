@@ -57,7 +57,7 @@ exports.handler = (argv) => {
 
     // exec it
     const run = exec(cmd);
-    if (run.code !== 0) {
+    if (!run || run.code !== 0) {
       echo(`failed to run ${test}, exiting 128...`);
       exit(128);
     }
