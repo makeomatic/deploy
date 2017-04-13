@@ -44,11 +44,13 @@ exports.handler = (argv) => {
   const crossEnv = `${argv.root}/cross-env`;
   const nyc = `${argv.root}/nyc`;
   const mocha = `${argv.root}/mocha`;
+  const customRun = argv.custom_run ? `${argv.custom_run} ` : '';
+  const runner = 'docker exec tester /bin/sh';
 
   // eslint-disable-next-line no-restricted-syntax
   for (const test of testFiles) {
     const basename = path.basename(test, '.js');
-    const run = exec(`docker exec tester /bin/sh -c "${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${mocha} ${test}"`);
+    const run = exec(`${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${mocha} ${test}"`);
     if (run.code !== 0) {
       echo(`failed to run ${test}, exiting 128...`);
       exit(128);

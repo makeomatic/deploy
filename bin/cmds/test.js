@@ -65,5 +65,8 @@ exports.builder = yargs => (
       alias: 'fail',
       describe: 'arbitrary code to execute on test failure',
     })
+    .option('custom_run', {
+      describe: 'custom run command for the tests',
+    })
 );
 exports.handler = () => {};
