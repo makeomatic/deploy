@@ -2,13 +2,21 @@
  * Builds docker images
  */
 
+const Promise = require('bluebird');
 const path = require('path');
 const glob = require('glob');
 const { exec, echo, exit } = require('shelljs');
 
+// to lower CPU usage
+async function execAsync(cmd) {
+  return Promise.fromCallback(next => (
+    exec(cmd, (code, stdout, stderr) => next(null, { code, stdout, stderr }))
+  ));
+}
+
 exports.command = 'run';
 exports.desc = 'performs testing';
-exports.handler = (argv) => {
+exports.handler = async (argv) => {
   require('./compose').handler(argv);
 
   // now that we have compose get tests
@@ -56,7 +64,8 @@ exports.handler = (argv) => {
     echo(cmd);
 
     // exec it
-    const run = exec(cmd);
+    // eslint-disable-next-line no-await-in-loop
+    const run = await execAsync(cmd);
     if (!run || run.code !== 0) {
       echo(`failed to run ${test}, exiting 128...`);
       exit(128);
