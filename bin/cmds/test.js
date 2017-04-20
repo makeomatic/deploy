@@ -46,6 +46,10 @@ exports.builder = yargs => (
       describe: 'report dir for coverage',
       default: './coverage',
     })
+    .option('test_framework', {
+      describe: 'test framework to use',
+      default: 'mocha',
+    })
     .option('coverage', {
       describe: 'whether to upload coverage or not',
       boolean: true,

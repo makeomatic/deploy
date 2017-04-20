@@ -51,14 +51,14 @@ exports.handler = async (argv) => {
   // now determine what we need
   const crossEnv = `${argv.root}/cross-env`;
   const nyc = `${argv.root}/nyc`;
-  const mocha = `${argv.root}/mocha`;
+  const test_framework = `${argv.root}/${argv.test_framework}`;
   const customRun = argv.custom_run ? `${argv.custom_run} ` : '';
   const runner = 'docker exec tester /bin/sh';
 
   // eslint-disable-next-line no-restricted-syntax
   for (const test of testFiles) {
     const basename = path.basename(test, '.js');
-    const cmd = `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${mocha} ${test}"`;
+    const cmd = `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${test_framework} ${test}"`;
 
     // show command we run
     echo(cmd);
