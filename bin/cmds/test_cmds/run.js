@@ -42,23 +42,31 @@ exports.handler = async (argv) => {
     echo('rebuilding modules');
     // eslint-disable-next-line no-restricted-syntax
     for (const mod of argv.rebuild) {
-      exec(`docker exec tester npm rebuild ${mod}`);
+      // eslint-disable-next-line no-await-in-loop
+      await execAsync(`docker exec tester npm rebuild ${mod}`);
     }
-  } else if (argv.sleep) {
+  }
+
+  if (argv.gyp) {
+    await execAsync('docker exec tester node-gyp configure');
+    await execAsync('docker exec tester node-gyp build');
+  }
+
+  if (argv.sleep) {
     exec(`sleep ${argv.sleep}`);
   }
 
   // now determine what we need
   const crossEnv = `${argv.root}/cross-env`;
   const nyc = `${argv.root}/nyc`;
-  const test_framework = `${argv.root}/${argv.test_framework}`;
+  const testFramework = `${argv.root}/${argv.test_framework}`;
   const customRun = argv.custom_run ? `${argv.custom_run} ` : '';
   const runner = 'docker exec tester /bin/sh';
 
   // eslint-disable-next-line no-restricted-syntax
   for (const test of testFiles) {
     const basename = path.basename(test, '.js');
-    const cmd = `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${test_framework} ${test}"`;
+    const cmd = `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${testFramework} ${test}"`;
 
     // show command we run
     echo(cmd);

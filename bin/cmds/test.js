@@ -72,5 +72,10 @@ exports.builder = yargs => (
     .option('custom_run', {
       describe: 'custom run command for the tests',
     })
+    .option('gyp', {
+      description: 'run nody-gyp-rebuild before tests',
+      boolean: true,
+      default: false,
+    })
 );
 exports.handler = () => {};
