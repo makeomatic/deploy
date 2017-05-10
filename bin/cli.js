@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+const path = require('path');
+const fs = require('fs');
+
 let parentProject;
 try {
   // eslint-disable-next-line import/no-dynamic-require
@@ -40,11 +43,11 @@ require('yargs')
     default: version,
   })
   .option('pkg', {
-    describe: 'package json contents',
-    default: parentProject,
+    describe: 'package json path',
+    default: `${process.cwd()}/package.json`,
   })
   .coerce({
-    pkg: JSON.parse,
+    pkg: arg => JSON.parse(fs.readFileSync(path.resolve(arg))),
   })
   .help()
   .argv;
