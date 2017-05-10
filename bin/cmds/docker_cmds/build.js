@@ -23,8 +23,9 @@ exports.handler = (argv) => {
   ShellString(dockerfile).to(tmpDockerfile);
 
   // try running compile before hand
-  if (exec('npm run compile').code !== 0) {
-    echo('failed to run compile');
+  if (argv.pkg.scripts.compile && exec('npm run compile').code !== 0) {
+    echo('Error: failed to run compile');
+    exit(1);
   }
 
   // start builder

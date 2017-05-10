@@ -39,5 +39,12 @@ require('yargs')
     describe: 'version of the project to build',
     default: version,
   })
+  .option('pkg', {
+    describe: 'package json contents',
+    default: parentProject,
+  })
+  .coerce({
+    pkg: JSON.parse,
+  })
   .help()
   .argv;
