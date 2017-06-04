@@ -45,17 +45,25 @@ function launchChrome(headless = true) {
       protocol.isIdle = true;
       protocol.idleDelay = 500;
       protocol.ee = new EventEmitter();
+      protocol.pending = new Map();
 
       let isIdle;
       const verifyIsIdle = () => {
         protocol.isIdle = protocol.pendingRequests === 0;
-        if (protocol.isIdle) protocol.ee.emit('idle');
+        if (protocol.isIdle) {
+          protocol.ee.emit('idle');
+        } else {
+          protocol.pending.forEach((params) => {
+            Log.verbose('pendingRequest', params.request.url);
+          });
+        }
       };
 
       Network.requestWillBeSent((params) => {
         protocol.pendingRequests += 1;
         protocol.isIdle = false;
         clearTimeout(isIdle);
+        protocol.pending.set(params.request.requestId, params);
         Log.verbose('requestWillBeSent', `[pending=${protocol.pendingRequests}]`, params.request.url);
       });
 
@@ -63,6 +71,7 @@ function launchChrome(headless = true) {
         protocol.pendingRequests -= 1;
         clearTimeout(isIdle);
         isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
+        protocol.pending.delete(params.request.requestId);
         Log.verbose('responseReceived', `[pending=${protocol.pendingRequests}]`, params.response.url);
       });
 
