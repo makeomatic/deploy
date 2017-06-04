@@ -180,7 +180,7 @@ module.exports.wait = function wait(_selector, timeout = 10000) {
   return module.exports
     .retry(timeout, `Find Node: ${_selector.el || _selector}`, () => (
       Promise
-        .resolve()
+        .bind(this)
         .then(() => Runtime.evaluate({
           includeCommandLineAPI: true,
           expression: selector,
