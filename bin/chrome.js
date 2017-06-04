@@ -63,7 +63,7 @@ function launchChrome(headless = true) {
         protocol.pendingRequests += 1;
         protocol.isIdle = false;
         clearTimeout(isIdle);
-        protocol.pending.set(params.request.requestId, params);
+        protocol.pending.set(params.requestId, params);
         Log.verbose('requestWillBeSent', `[pending=${protocol.pendingRequests}]`, params.request.url);
       });
 
