@@ -166,11 +166,13 @@ module.exports.retry = function retry(timeout, name, fn) {
  * @return {Boolean}
  */
 module.exports.isIdle = function isIdle(timeout = 10000) {
-  if (this.protocol.isIdle === true) return Promise.resolve();
-
   return Promise.fromCallback((next) => {
+    if (this.protocol.pending.size === 0) {
+      return next();
+    }
+
     this.protocol.ee.once('idle', next);
-    setTimeout(next, timeout, new Error(`idle event not fired in ${timeout}`));
+    return setTimeout(next, timeout, new Error(`idle event not fired in ${timeout}`));
   });
 };
 
