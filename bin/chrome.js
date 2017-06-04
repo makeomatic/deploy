@@ -60,19 +60,24 @@ function launchChrome(headless = true) {
       };
 
       Network.requestWillBeSent((params) => {
+        Log.verbose('requestWillBeSent', `[pending=${protocol.pendingRequests}]`, params.request.url);
+
         protocol.pendingRequests += 1;
         protocol.isIdle = false;
-        clearTimeout(isIdle);
         protocol.pending.set(params.requestId, params);
-        Log.verbose('requestWillBeSent', `[pending=${protocol.pendingRequests}]`, params.request.url);
+
+        clearTimeout(isIdle);
+        isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
       });
 
       const onLoad = (params) => {
+        Log.verbose('responseReceived', `[pending=${protocol.pendingRequests}]`, protocol.pending.get(params.requestId).request.url);
+
         protocol.pendingRequests -= 1;
+        protocol.pending.delete(params.requestId);
+
         clearTimeout(isIdle);
         isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
-        Log.verbose('responseReceived', `[pending=${protocol.pendingRequests}]`, protocol.pending.get(params.requestId).request.url);
-        protocol.pending.delete(params.requestId);
       };
 
       Network.loadingFailed(onLoad);
