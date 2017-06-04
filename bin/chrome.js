@@ -48,6 +48,7 @@ function launchChrome(headless = true) {
       let isIdle;
       const verifyIsIdle = () => {
         if (protocol.pending.size === 0) {
+          Log.verbose('idle');
           protocol.ee.emit('idle');
         } else {
           const requests = [];
@@ -161,10 +162,10 @@ module.exports.retry = function retry(timeout, name, fn) {
 
 /**
  * Resolves promise whenever current window is idle of any requests
- * @param  {Number}  [timeout=20000]
+ * @param  {Number}  [timeout=10000]
  * @return {Boolean}
  */
-module.exports.isIdle = function isIdle(timeout = 20000) {
+module.exports.isIdle = function isIdle(timeout = 10000) {
   if (this.protocol.isIdle === true) return Promise.resolve();
 
   return Promise.fromCallback((next) => {
@@ -198,8 +199,8 @@ module.exports.wait = function wait(_selector, timeout = 20000) {
           if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
           if (!result.objectId) throw new Error('couldnt find node');
         })
-        .tap(() => module.exports.isIdle.call(this))
     ))
+    .tap(() => module.exports.isIdle.call(this))
     .return(selector);
 };
 
