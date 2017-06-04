@@ -53,7 +53,11 @@ function launchChrome(headless = true) {
         if (protocol.isIdle) {
           protocol.ee.emit('idle');
         } else {
-          const requests = Array.from(protocol.pending, v => v.request.url);
+          const requests = [];
+          // eslint-disable-next-line no-restricted-syntax
+          for (const v of protocol.pending.values()) {
+            requests.push(v.request.url);
+          }
           Log.verbose('pendingRequest', `[${requests.length}]`, requests.join(' \n'));
         }
       };
