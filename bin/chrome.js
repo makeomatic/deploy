@@ -47,7 +47,7 @@ function launchChrome(headless = true) {
 
       let isIdle;
       const verifyIsIdle = () => {
-        if (protocol.pending.size() === 0) {
+        if (protocol.pending.size === 0) {
           protocol.ee.emit('idle');
         } else {
           const requests = [];
@@ -61,7 +61,7 @@ function launchChrome(headless = true) {
       };
 
       Network.requestWillBeSent((params) => {
-        Log.verbose('requestWillBeSent', `[pending=${protocol.pending.size()}]`, params.request.url);
+        Log.verbose('requestWillBeSent', `[pending=${protocol.pending.size}]`, params.request.url);
 
         protocol.pending.set(params.requestId, params);
 
@@ -70,7 +70,7 @@ function launchChrome(headless = true) {
       });
 
       const onLoad = (params) => {
-        Log.verbose('responseReceived', `[pending=${protocol.pending.size()}]`, protocol.pending.get(params.requestId).request.url);
+        Log.verbose('responseReceived', `[pending=${protocol.pending.size}]`, protocol.pending.get(params.requestId).request.url);
 
         protocol.pending.delete(params.requestId);
 
