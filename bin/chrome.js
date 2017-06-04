@@ -71,7 +71,10 @@ function launchChrome(headless = true) {
       });
 
       const onLoad = (params) => {
-        Log.verbose('responseReceived', `[pending=${protocol.pending.size}]`, protocol.pending.get(params.requestId).request.url);
+        const originalRequest = protocol.pending.get(params.requestId);
+
+        // might fire twice with failed/finished handlers
+        Log.verbose('responseReceived', `[pending=${protocol.pending.size}]`, originalRequest && originalRequest.request.url);
 
         protocol.pending.delete(params.requestId);
 
