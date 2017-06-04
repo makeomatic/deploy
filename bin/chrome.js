@@ -302,22 +302,15 @@ module.exports.submit = function submit(selector, timeout = 10000) {
             Log.verbose('Completed evaluate', result.value);
             return result.value;
           })
-          .tap(coordinates => Input.dispatchMouseEvent({
-            type: 'mouseMoved',
-            ...coordinates,
-          }))
-          .tap(coordinates => Input.dispatchMouseEvent({
-            type: 'mousePressed',
-            button: 'left',
-            clickCount: 1,
-            ...coordinates,
-          }))
-          .tap(coordinates => Input.dispatchMouseEvent({
-            type: 'mouseReleased',
-            button: 'left',
-            clickCount: 1,
-            ...coordinates,
-          }))
+          .tap(coordinates => Input.dispatchMouseEvent(Object.assign(
+            { type: 'mouseMoved' }, coordinates
+          )))
+          .tap(coordinates => Input.dispatchMouseEvent(Object.assign(
+            { type: 'mousePressed', button: 'left', clickCount: 1 }, coordinates
+          )))
+          .tap(coordinates => Input.dispatchMouseEvent(Object.assign(
+            { type: 'mouseReleased', button: 'left', clickCount: 1 }, coordinates
+          )))
       ));
     });
 };
@@ -352,7 +345,7 @@ module.exports.captureResponse = function captureResponse(url, timeout = 10000) 
       Log.verbose('response:', params);
       if (url.test(params.response.url)) {
         const { response, requestId } = params;
-        next(null, { ...response, requestId });
+        next(null, Object.assign({}, response, { requestId }));
       }
     });
 
