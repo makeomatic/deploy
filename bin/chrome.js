@@ -41,16 +41,13 @@ function launchChrome(headless = true) {
 
       const { Page, Network, Runtime, DOM, Console } = protocol;
 
-      protocol.pendingRequests = 0;
-      protocol.isIdle = true;
       protocol.idleDelay = 500;
       protocol.ee = new EventEmitter();
       protocol.pending = new Map();
 
       let isIdle;
       const verifyIsIdle = () => {
-        protocol.isIdle = protocol.pendingRequests === 0;
-        if (protocol.isIdle) {
+        if (protocol.pending.size() === 0) {
           protocol.ee.emit('idle');
         } else {
           const requests = [];
@@ -58,15 +55,14 @@ function launchChrome(headless = true) {
           for (const v of protocol.pending.values()) {
             requests.push(v.request.url);
           }
-          Log.verbose('pendingRequest', `[${requests.length}]`, requests.join(' \n'));
+
+          Log.verbose('pendingRequest', `[${requests.length}]`, requests.join(', '));
         }
       };
 
       Network.requestWillBeSent((params) => {
-        Log.verbose('requestWillBeSent', `[pending=${protocol.pendingRequests}]`, params.request.url);
+        Log.verbose('requestWillBeSent', `[pending=${protocol.pending.size()}]`, params.request.url);
 
-        protocol.pendingRequests += 1;
-        protocol.isIdle = false;
         protocol.pending.set(params.requestId, params);
 
         clearTimeout(isIdle);
@@ -74,9 +70,8 @@ function launchChrome(headless = true) {
       });
 
       const onLoad = (params) => {
-        Log.verbose('responseReceived', `[pending=${protocol.pendingRequests}]`, protocol.pending.get(params.requestId).request.url);
+        Log.verbose('responseReceived', `[pending=${protocol.pending.size()}]`, protocol.pending.get(params.requestId).request.url);
 
-        protocol.pendingRequests -= 1;
         protocol.pending.delete(params.requestId);
 
         clearTimeout(isIdle);
