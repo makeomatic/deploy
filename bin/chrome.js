@@ -71,8 +71,8 @@ function launchChrome(headless = true) {
         protocol.pendingRequests -= 1;
         clearTimeout(isIdle);
         isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
+        Log.verbose('responseReceived', `[pending=${protocol.pendingRequests}]`, protocol.pending.get(params.requestId).request.url);
         protocol.pending.delete(params.requestId);
-        Log.verbose('responseReceived', `[pending=${protocol.pendingRequests}]`);
       };
 
       Network.loadingFailed(onLoad);
@@ -142,7 +142,7 @@ module.exports.captureScreenshot = function captureScreenshot(any) {
  * Retries fn during timeout
  * @param  {Function} fn
  * @param  {String}   name
- * @param  {Number}   [timeout=10000]
+ * @param  {Number}   [timeout=20000]
  * @return {Promise}
  */
 module.exports.retry = function retry(timeout, name, fn) {
@@ -158,10 +158,10 @@ module.exports.retry = function retry(timeout, name, fn) {
 
 /**
  * Resolves promise whenever current window is idle of any requests
- * @param  {Number}  [timeout=10000]
+ * @param  {Number}  [timeout=20000]
  * @return {Boolean}
  */
-module.exports.isIdle = function isIdle(timeout = 10000) {
+module.exports.isIdle = function isIdle(timeout = 20000) {
   if (this.protocol.isIdle === true) return Promise.resolve();
 
   return Promise.fromCallback((next) => {
@@ -173,10 +173,10 @@ module.exports.isIdle = function isIdle(timeout = 10000) {
 /**
  * Waits for selector to become available
  * @param  {String} selector
- * @param  {Number} [timeout=10000]
+ * @param  {Number} [timeout=20000]
  * @return {Promise}
  */
-module.exports.wait = function wait(_selector, timeout = 10000) {
+module.exports.wait = function wait(_selector, timeout = 20000) {
   const { Runtime } = this.protocol;
 
   const selector = is.string(_selector)
@@ -204,10 +204,10 @@ module.exports.wait = function wait(_selector, timeout = 10000) {
  * Types text into input
  * @param  {Object|String} selector
  * @param  {String} text
- * @param  {Number} [timeout=10000]
+ * @param  {Number} [timeout=20000]
  * @return {Promise}
  */
-module.exports.type = function type(selector, text, timeout = 10000) {
+module.exports.type = function type(selector, text, timeout = 20000) {
   const { Runtime, Input } = this.protocol;
   const chars = String(text).split('');
 
@@ -266,10 +266,10 @@ module.exports.type = function type(selector, text, timeout = 10000) {
 /**
  * Submits form by clicking on the submit button
  * @param  {Object|String} selector
- * @param  {Number} [timeout=10000]
+ * @param  {Number} [timeout=20000]
  * @return {Promise}
  */
-module.exports.submit = function submit(selector, timeout = 10000) {
+module.exports.submit = function submit(selector, timeout = 20000) {
   const { Input, Runtime } = this.protocol;
 
   return Promise
@@ -324,10 +324,10 @@ module.exports.submit = function submit(selector, timeout = 10000) {
 /**
  * Captures redirect to URL
  * @param  {Regexp} url
- * @param  {Number} [timeout=10000]
+ * @param  {Number} [timeout=20000]
  * @return {Promise<String>}
  */
-module.exports.captureRedirect = function captureRedirect(url, timeout = 10000) {
+module.exports.captureRedirect = function captureRedirect(url, timeout = 20000) {
   const { Network } = this.protocol;
 
   return Promise.fromCallback((next) => {
@@ -341,10 +341,10 @@ module.exports.captureRedirect = function captureRedirect(url, timeout = 10000) 
 
 /**
  * Captures response
- * @param {Number} [timeout=10000]
+ * @param {Number} [timeout=20000]
  * @return {Promise<Object>}
  */
-module.exports.captureResponse = function captureResponse(url, timeout = 10000) {
+module.exports.captureResponse = function captureResponse(url, timeout = 20000) {
   const { Network } = this.protocol;
   return Promise.fromCallback((next) => {
     Network.responseReceived((params) => {
