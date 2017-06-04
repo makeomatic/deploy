@@ -71,7 +71,7 @@ function launchChrome(headless = true) {
         protocol.pendingRequests -= 1;
         clearTimeout(isIdle);
         isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
-        protocol.pending.delete(params.request.requestId);
+        protocol.pending.delete(params.response.requestId);
         Log.verbose('responseReceived', `[pending=${protocol.pendingRequests}]`, params.response.url);
       });
 
