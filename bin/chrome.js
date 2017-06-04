@@ -48,7 +48,7 @@ function launchChrome(headless = true) {
       let isIdle;
       const verifyIsIdle = () => {
         if (protocol.pending.size === 0) {
-          Log.verbose('idle');
+          Log.verbose('idle', 'completed');
           protocol.ee.emit('idle');
         } else {
           const requests = [];
@@ -206,6 +206,7 @@ module.exports.wait = function wait(_selector, timeout = 30000) {
         })
     ))
     .tap(() => module.exports.isIdle.call(this))
+    .tap(() => Log.verbose('wait', 'completed'))
     .return(selector);
 };
 
@@ -260,7 +261,7 @@ module.exports.type = function type(selector, text, timeout = 30000) {
           .bind(this)
           .then(() => Runtime.evaluate({
             includeCommandLineAPI: true,
-            expression: `${nodeSelector}.focus()`,
+            expression: `${nodeSelector}.value = ''; ${nodeSelector}.focus();`,
           }))
           .tap(({ result, exceptionDetails }) => {
             Log.verbose('Completed evaluate', result.description);
