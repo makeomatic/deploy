@@ -56,14 +56,14 @@ function launchChrome(headless = true) {
         protocol.pendingRequests += 1;
         protocol.isIdle = false;
         clearTimeout(isIdle);
-        Log.verbose('requestWillBeSent', params.request.url);
+        Log.verbose('requestWillBeSent', `[pending=${protocol.pendingRequests}]`, params.request.url);
       });
 
       Network.responseReceived((params) => {
         protocol.pendingRequests -= 1;
         clearTimeout(isIdle);
         isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
-        Log.verbose('responseReceived', params.response.url);
+        Log.verbose('responseReceived', `[pending=${protocol.pendingRequests}]`, params.response.url);
       });
 
       Console.messageAdded((params) => {
@@ -189,7 +189,7 @@ module.exports.wait = function wait(_selector, timeout = 10000) {
           if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
           if (!result.objectId) throw new Error('couldnt find node');
         })
-        .tap(module.exports.isIdle)
+        .tap(() => module.exports.isIdle.call(this))
     ))
     .return(selector);
 };
