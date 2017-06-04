@@ -17,15 +17,18 @@
     "babel-plugin-istanbul": "^4.1.4",
     "babel-plugin-transform-strict-mode": "^6.24.1",
     "babel-register": "^6.24.1",
+    "chrome-remote-interface": "^0.23.1",
     "eslint": "^3.19.0",
     "eslint-config-makeomatic": "^1.0.1",
     "eslint-plugin-import": "^2.3.0",
-    "eslint-plugin-promise": "^3.5.0"
+    "eslint-plugin-promise": "^3.5.0",
+    "lighthouse": "^2.0.0"
   },
   "dependencies": {
     "bluebird": "^3.5.0",
     "death": "^1.1.0",
     "glob": "^7.1.2",
+    "is": "^3.2.1",
     "ms-conf": "^3.1.2",
     "npm-path": "^2.0.3",
     "shelljs": "^0.7.7",
@@ -40,7 +43,9 @@
     "codecov": "^2.1.0",
     "cross-env": "^4.0.0 || ^5.0.0",
     "mocha": "^3.2.0",
-    "nyc": "^10.2.0 || ^11.0.0"
+    "nyc": "^10.2.0 || ^11.0.0",
+    "chrome-remote-interface": "^0.23.1",
+    "lighthouse": "^2.0.0"
   },
   "files": [
     "bin/",
