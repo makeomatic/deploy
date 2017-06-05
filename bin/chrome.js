@@ -379,3 +379,22 @@ module.exports.scrollTo = function scrollTo(x = 0, y = 0) {
     expression: `window.scrollTo(${x}, ${y})`,
   });
 };
+
+/**
+ * Executes expression in current context and returns data by value, unless overwritten by opts.
+ * @param  {string} expression - Expression to execute.
+ * @param  {Object} [opts={}] - Runtime.evaluate opts.
+ * @returns {Promise<mixed>}
+ */
+module.exports.exec = function exec(expression, opts = {}) {
+  const { Runtime } = this.protocol;
+
+  return Runtime.evaluate(Object.assign({
+    returnByValue: true,
+    includeCommandLineAPI: true,
+  }, opts, { expression }))
+  .then(({ result, exceptionDetails }) => {
+    if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
+    return result.value;
+  });
+};
