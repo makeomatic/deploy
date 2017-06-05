@@ -2,6 +2,7 @@ const Promise = require('bluebird');
 const chrome = require('chrome-remote-interface');
 const fs = require('fs');
 const is = require('is');
+const assert = require('assert');
 const { ChromeLauncher } = require('lighthouse/lighthouse-cli/chrome-launcher');
 const Log = require('lighthouse/lighthouse-core/lib/log');
 const EventEmitter = require('events');
@@ -364,7 +365,8 @@ module.exports.captureRedirect = function captureRedirect(url, timeout = 30000) 
 
 /**
  * Captures response
- * @param {Number} [timeout=30000]
+ * @param {RegExp} url - Response URL regexp to capture.
+ * @param {number} [timeout=30000]
  * @return {Promise<Object>}
  */
 module.exports.captureResponse = function captureResponse(url, timeout = 30000) {
@@ -380,6 +382,26 @@ module.exports.captureResponse = function captureResponse(url, timeout = 30000) 
 
     setTimeout(next, timeout, new Error('failed to get response'));
   });
+};
+
+/**
+ * Captures response and returns body
+ * @param {string} url - URL of response to capture
+ * @param {number} [timeout=30000]
+ * @param {number}
+ * @return {Promise<string>}
+ */
+module.exports.captureResponseBody = function captureResponseBody(url, code = 200, timeout = 30000) {
+  const { Network } = this.protocol;
+
+  return Promise
+    .bind(this, [url, timeout])
+    .spread(module.exports.captureResponse)
+    .then((response) => {
+      assert.equal(response.status, code, `response code is ${response.status}`);
+      return Network.getResponseBody({ requestId: response.requestId });
+    })
+    .get('body');
 };
 
 /**
