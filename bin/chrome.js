@@ -42,8 +42,10 @@ function launchChrome(headless = true) {
       const { Page, Network, Runtime, DOM, Console } = protocol;
 
       protocol.idleDelay = 500;
+      protocol.evictionDelay = 5000;
       protocol.ee = new EventEmitter();
       protocol.pending = new Map();
+      protocol.timeouts = new Map();
 
       let isIdle;
       const verifyIsIdle = () => {
@@ -61,26 +63,37 @@ function launchChrome(headless = true) {
         }
       };
 
-      Network.requestWillBeSent((params) => {
-        Log.verbose('requestWillBeSent', `[pending=${protocol.pending.size}]`, params.request.url);
-
-        protocol.pending.set(params.requestId, params);
-
-        clearTimeout(isIdle);
-        isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
-      });
-
-      const onLoad = (params) => {
+      const onLoad = (params, evicted) => {
         const originalRequest = protocol.pending.get(params.requestId);
 
         // might fire twice with failed/finished handlers
-        Log.verbose('responseReceived', `[pending=${protocol.pending.size}]`, originalRequest && originalRequest.request.url);
+        Log.verbose(
+          evicted ? 'evicted' : 'responseReceived',
+          `[pending=${protocol.pending.size}]`, originalRequest && originalRequest.request.url
+        );
 
+        // remove request from pending
         protocol.pending.delete(params.requestId);
+
+        // clear timeouts
+        if (protocol.timeouts.has(params.requestId)) {
+          clearTimeout(protocol.timeouts.get(params.requestId));
+          protocol.timeouts.delete(params.requestId);
+        }
 
         clearTimeout(isIdle);
         isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
       };
+
+      Network.requestWillBeSent((params) => {
+        Log.verbose('requestWillBeSent', `[pending=${protocol.pending.size}]`, params.request.url);
+
+        protocol.pending.set(params.requestId, params);
+        protocol.timeouts.set(params.requestId, setTimeout(onLoad, protocol.evictionDelay, params, true));
+
+        clearTimeout(isIdle);
+        isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
+      });
 
       Network.loadingFailed(onLoad);
       Network.loadingFinished(onLoad);
