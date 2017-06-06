@@ -129,4 +129,6 @@ Options:
   --custom_run                     custom run command for the tests
   --gyp                            run nody-gyp-rebuild before tests
                                                       [boolean] [default: false]
+  --arbitrary_exec                 arbitrary commands to exec in docker tester
+                                                           [array] [default: []]
 ```

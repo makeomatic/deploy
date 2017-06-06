@@ -64,6 +64,16 @@ exports.handler = async (argv) => {
   const runner = 'docker exec tester /bin/sh';
 
   // eslint-disable-next-line no-restricted-syntax
+  for (const arbitrary of argv.arbitrary_exec) {
+    // eslint-disable-next-line no-await-in-loop
+    const run = await execAsync(`docker exec tester ${arbitrary}`);
+    if (!run || run.code !== 0) {
+      echo(`failed to run ${arbitrary}, exiting 128...`);
+      exit(128);
+    }
+  }
+
+  // eslint-disable-next-line no-restricted-syntax
   for (const test of testFiles) {
     const basename = path.basename(test, '.js');
     const cmd = `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${testFramework} ${test}"`;

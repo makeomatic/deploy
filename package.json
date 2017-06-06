@@ -1,6 +1,6 @@
 {
   "name": "@makeomatic/deploy",
-  "version": "1.7.21",
+  "version": "1.8.0",
   "description": "Common build and deploy tasks wrapped in a cli",
   "main": "./bin/index.js",
   "repository": "https://github.com/makeomatic/deploy.git",
@@ -17,7 +17,7 @@
     "babel-plugin-istanbul": "^4.1.4",
     "babel-plugin-transform-strict-mode": "^6.24.1",
     "babel-register": "^6.24.1",
-    "chrome-remote-interface": "^0.23.1",
+    "chrome-remote-interface": "^0.23.2",
     "eslint": "^3.19.0",
     "eslint-config-makeomatic": "^1.0.1",
     "eslint-plugin-import": "^2.3.0",
@@ -40,12 +40,12 @@
   "peerDependencies": {
     "babel-plugin-istanbul": "^4.1.1",
     "babel-register": "^6.24.0",
+    "chrome-remote-interface": "^0.23.1",
     "codecov": "^2.1.0",
     "cross-env": "^4.0.0 || ^5.0.0",
+    "lighthouse": "^2.0.0",
     "mocha": "^3.2.0",
-    "nyc": "^10.2.0 || ^11.0.0",
-    "chrome-remote-interface": "^0.23.1",
-    "lighthouse": "^2.0.0"
+    "nyc": "^10.2.0 || ^11.0.0"
   },
   "files": [
     "bin/",

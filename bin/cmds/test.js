@@ -77,5 +77,11 @@ exports.builder = yargs => (
       boolean: true,
       default: false,
     })
+    .option('arbitrary_exec', {
+      describe: 'arbitrary commands to exec in docker tester',
+      default: [],
+      array: true,
+    })
+    .help()
 );
 exports.handler = () => {};
