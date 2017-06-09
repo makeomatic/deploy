@@ -3,7 +3,7 @@ const chrome = require('chrome-remote-interface');
 const fs = require('fs');
 const is = require('is');
 const assert = require('assert');
-const { ChromeLauncher } = require('lighthouse/chrome-launcher/chrome-launcher');
+const { Launcher } = require('lighthouse/chrome-launcher/chrome-launcher');
 const Log = require('lighthouse/lighthouse-core/lib/log');
 const EventEmitter = require('events');
 
@@ -16,7 +16,7 @@ const EventEmitter = require('events');
 function launchChrome(headless = true) {
   Log.setLevel('verbose');
 
-  const launcher = new ChromeLauncher({
+  const launcher = new Launcher({
     port: 9222,
     autoSelectChrome: true, // False to manually select which Chrome install.
     additionalFlags: [
