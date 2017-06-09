@@ -18,8 +18,7 @@ function launchChrome(headless = true) {
 
   const launcher = new Launcher({
     port: 9222,
-    autoSelectChrome: true, // False to manually select which Chrome install.
-    additionalFlags: [
+    chromeFlags: [
       '--window-size=1024,768',
       '--disable-gpu',
       '--no-sandbox',
