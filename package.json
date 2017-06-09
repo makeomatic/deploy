@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
-    "babel-core": "^6.24.1",
+    "babel-core": "^6.25.0",
     "babel-eslint": "^7.2.3",
     "babel-plugin-istanbul": "^4.1.4",
     "babel-plugin-transform-strict-mode": "^6.24.1",
@@ -22,7 +22,7 @@
     "eslint-config-makeomatic": "^1.0.1",
     "eslint-plugin-import": "^2.3.0",
     "eslint-plugin-promise": "^3.5.0",
-    "lighthouse": "^2.0.0"
+    "lighthouse": "^2.1.0"
   },
   "dependencies": {
     "bluebird": "^3.5.0",
@@ -31,7 +31,7 @@
     "is": "^3.2.1",
     "ms-conf": "^3.1.2",
     "npm-path": "^2.0.3",
-    "shelljs": "^0.7.7",
+    "shelljs": "^0.7.8",
     "yargs": "^8.0.1"
   },
   "bin": {
@@ -43,7 +43,7 @@
     "chrome-remote-interface": "^0.23.1",
     "codecov": "^2.1.0",
     "cross-env": "^4.0.0 || ^5.0.0",
-    "lighthouse": "^2.0.0",
+    "lighthouse": "^2.1.0",
     "mocha": "^3.2.0",
     "nyc": "^10.2.0 || ^11.0.0"
   },
