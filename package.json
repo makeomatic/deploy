@@ -1,6 +1,6 @@
 {
   "name": "@makeomatic/deploy",
-  "version": "1.8.4",
+  "version": "1.8.5",
   "description": "Common build and deploy tasks wrapped in a cli",
   "main": "./bin/index.js",
   "repository": "https://github.com/makeomatic/deploy.git",
