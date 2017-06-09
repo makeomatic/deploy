@@ -27,7 +27,7 @@ function launchChrome(headless = true) {
     ],
   });
 
-  return launcher.run()
+  return launcher.launch()
     // Kill Chrome if there's an error.
     .catch(err => Promise
       .resolve(launcher.kill())
