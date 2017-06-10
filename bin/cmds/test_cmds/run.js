@@ -14,6 +14,21 @@ async function execAsync(cmd) {
   ));
 }
 
+async function loopThroughCmds(arr, makeCmd = it => it) {
+  // eslint-disable-next-line no-restricted-syntax
+  for (const preCommand of arr) {
+    const cmd = makeCmd(preCommand);
+    echo(cmd);
+
+    // eslint-disable-next-line no-await-in-loop
+    const run = await execAsync(cmd);
+    if (!run || run.code !== 0) {
+      echo(`failed to run ${cmd}, exiting 128...`);
+      exit(128);
+    }
+  }
+}
+
 exports.command = 'run';
 exports.desc = 'performs testing';
 exports.handler = async (argv) => {
@@ -63,32 +78,12 @@ exports.handler = async (argv) => {
   const customRun = argv.custom_run ? `${argv.custom_run} ` : '';
   const runner = 'docker exec tester /bin/sh';
 
-  // eslint-disable-next-line no-restricted-syntax
-  for (const arbitrary of argv.arbitrary_exec) {
-    // eslint-disable-next-line no-await-in-loop
-    const run = await execAsync(`docker exec tester ${arbitrary}`);
-    if (!run || run.code !== 0) {
-      echo(`failed to run ${arbitrary}, exiting 128...`);
-      exit(128);
-    }
-  }
-
-  // eslint-disable-next-line no-restricted-syntax
-  for (const test of testFiles) {
+  await loopThroughCmds(argv.pre);
+  await loopThroughCmds(argv.arbitrary_exec, cmd => `docker exec tester ${cmd}`);
+  await loopThroughCmds(testFiles, (test) => {
     const basename = path.basename(test, '.js');
-    const cmd = `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${testFramework} ${test}"`;
-
-    // show command we run
-    echo(cmd);
-
-    // exec it
-    // eslint-disable-next-line no-await-in-loop
-    const run = await execAsync(cmd);
-    if (!run || run.code !== 0) {
-      echo(`failed to run ${test}, exiting 128...`);
-      exit(128);
-    }
-  }
+    return `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${testFramework} ${test}"`;
+  });
 
   // upload codecoverage report
   if (argv.coverage) {

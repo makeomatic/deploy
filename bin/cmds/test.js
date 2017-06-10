@@ -82,6 +82,11 @@ exports.builder = yargs => (
       default: [],
       array: true,
     })
+    .option('pre', {
+      describe: 'pre commands to run',
+      default: [],
+      array: true,
+    })
     .help()
 );
 exports.handler = () => {};
