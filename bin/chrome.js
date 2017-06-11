@@ -397,8 +397,12 @@ module.exports.captureResponseBody = function captureResponseBody(url, code = 20
     .bind(this, [url, timeout])
     .spread(module.exports.captureResponse)
     .then((response) => {
-      assert.equal(response.status, code, `response code is ${response.status}`);
-      return Network.getResponseBody({ requestId: response.requestId });
+      const body = Network.getResponseBody({ requestId: response.requestId });
+
+      // print response body on unexpected code
+      assert.equal(response.status, code, `Response code is ${response.status}. Body: ${body}`);
+
+      return body;
     })
     .get('body');
 };
