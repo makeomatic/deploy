@@ -114,6 +114,8 @@ function launchChrome(headless = true) {
                 clearTimeout(t);
               }
 
+              clearTimeout(isIdle);
+
               protocol = null;
             });
           },
