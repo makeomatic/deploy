@@ -109,6 +109,11 @@ function launchChrome(headless = true) {
           protocol,
           close() {
             return Promise.join(launcher.kill(), protocol.close(), () => {
+              // eslint-disable-next-line no-restricted-syntax
+              for (const t of protocol.timeouts.values()) {
+                clearTimeout(t);
+              }
+
               protocol = null;
             });
           },
