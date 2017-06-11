@@ -397,7 +397,9 @@ module.exports.captureResponseBody = function captureResponseBody(url, code = 20
     .bind(this, [url, timeout])
     .spread(module.exports.captureResponse)
     .then(response => Promise.props({
-      body: Network.getResponseBody({ requestId: response.requestId }).get('body'),
+      // if we fail to fetch it -> just print error
+      body: Network.getResponseBody({ requestId: response.requestId }).get('body').catch(err => err.message),
+      // capture status code
       status: response.status,
     }))
     .then(({ body, status }) => {
