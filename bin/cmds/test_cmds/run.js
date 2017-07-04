@@ -82,7 +82,14 @@ exports.handler = async (argv) => {
   await loopThroughCmds(argv.arbitrary_exec, cmd => `docker exec tester ${cmd}`);
   await loopThroughCmds(testFiles, (test) => {
     const basename = path.basename(test, '.js');
-    return `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${nyc} --report-dir ${argv.report_dir}/${basename} ${testFramework} ${test}"`;
+    const coverageDir = `${argv.report_dir}/${basename}`;
+    const cov = argv.nycCoverage ? `${nyc} --report-dir ${coverageDir}` : '';
+
+    // somewhat of a hack for jest test coverage
+    const testBin = testFramework
+      .replace('<coverageDirectory>', coverageDir);
+
+    return `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${cov} ${testBin} ${test}"`;
   });
 
   // upload codecoverage report

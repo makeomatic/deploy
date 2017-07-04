@@ -3,42 +3,60 @@ const chrome = require('chrome-remote-interface');
 const fs = require('fs');
 const is = require('is');
 const assert = require('assert');
-const { Launcher } = require('lighthouse/chrome-launcher/chrome-launcher');
-const Log = require('lighthouse/lighthouse-core/lib/log');
+const { Launcher } = require('chrome-launcher');
 const EventEmitter = require('events');
+const Log = require('lighthouse-logger');
+const rimraf = require('rimraf');
+
+const _SIGINT = 'SIGINT';
+const _SIGINT_EXIT_CODE = 130;
 
 /**
  * Launches a debugging instance of Chrome on port 9222.
- * @param {boolean} [headless] True (default) to launch Chrome in headless mode.
- *     Set to false to launch Chrome normally.
  * @return {Promise<{ chrome: ChromeLauncher, protocol: ChromeDebugProtocol, close: Function }>}
  */
-function launchChrome(headless = true) {
-  Log.setLevel('verbose');
-
-  const launcher = new Launcher({
-    port: 9222,
+function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
+  const settings = Object.assign({
+    rimraf,
+    logLevel: 'verbose',
     chromeFlags: [
       '--window-size=1024,768',
       '--disable-gpu',
       '--no-sandbox',
-      headless ? '--headless' : '',
+      '--headless',
     ],
+    handleSIGINT: true,
+  }, opts);
+
+  const initChrome = async () => {
+    const instance = new Launcher(settings, moduleOverrides);
+
+    // Kill spawned Chrome process in case of ctrl-C.
+    if (settings.handleSIGINT) {
+      process.on(_SIGINT, async () => {
+        await instance.kill();
+        process.exit(_SIGINT_EXIT_CODE);
+      });
+    }
+
+    await instance.launch(settings);
+
+    return {
+      pid: instance.pid,
+      port: instance.port,
+      kill: async () => instance.kill(),
+    };
+  };
+
+  const initProtocol = launcher => Promise.props({
+    launcher,
+    protocol: chrome({ port: launcher.port }),
   });
 
-  return launcher.launch()
-    // Kill Chrome if there's an error.
-    .catch(err => Promise
-      .resolve(launcher.kill())
-      .timeout(60000)
-      .catch(() => { throw err; })
-      .then(() => { throw err; })
-    )
-    .then(() => chrome())
-    .then((_protocol) => {
-      // NOTE: https://chromedevtools.github.io/devtools-protocol/tot/Page/
-      let protocol = _protocol;
-
+  return Promise
+    .resolve(initChrome())
+    .then(initProtocol)
+    .then(({ protocol, launcher }) => {
       const { Page, Network, Runtime, DOM, Console } = protocol;
 
       protocol.idleDelay = 500;
@@ -103,21 +121,26 @@ function launchChrome(headless = true) {
       });
 
       return Promise
-        .join(Page.enable(), Network.enable(), Runtime.enable(), DOM.enable(), Console.enable())
+        .all([
+          Page.enable(),
+          Network.enable(),
+          Runtime.enable(),
+          DOM.enable(),
+          Console.enable(),
+        ])
         .return({
           launcher,
           protocol,
           close() {
-            return Promise.join(launcher.kill(), protocol.close(), () => {
-              // eslint-disable-next-line no-restricted-syntax
-              for (const t of protocol.timeouts.values()) {
-                clearTimeout(t);
-              }
+            // eslint-disable-next-line no-restricted-syntax
+            for (const t of protocol.timeouts.values()) {
+              clearTimeout(t);
+            }
 
-              clearTimeout(isIdle);
+            clearTimeout(isIdle);
+            isIdle = null;
 
-              protocol = null;
-            });
+            return Promise.all([protocol.close(), launcher.kill()]);
           },
         });
     });
@@ -277,20 +300,19 @@ module.exports.type = function type(selector, text, timeout = 30000) {
     .bind(this, [selector, timeout])
     .spread(module.exports.wait)
     .tap(nodeSelector => module.exports.retry(timeout, 'setNodeValue', () => (
-        Promise
-          .bind(this)
-          .then(() => Runtime.evaluate({
-            includeCommandLineAPI: true,
-            expression: `${nodeSelector}.value = ''; ${nodeSelector}.focus();`,
-          }))
-          .tap(({ result, exceptionDetails }) => {
-            Log.verbose('Completed evaluate', result.description);
-            if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
-          })
-          .then(simulateTyping)
-          .catch(module.exports.captureScreenshot)
-      )
-    ));
+      Promise
+        .bind(this)
+        .then(() => Runtime.evaluate({
+          includeCommandLineAPI: true,
+          expression: `${nodeSelector}.value = ''; ${nodeSelector}.focus();`,
+        }))
+        .tap(({ result, exceptionDetails }) => {
+          Log.verbose('Completed evaluate', result.description);
+          if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
+        })
+        .then(simulateTyping)
+        .catch(module.exports.captureScreenshot)
+    )));
 };
 
 /**
@@ -435,12 +457,13 @@ module.exports.scrollTo = function scrollTo(x = 0, y = 0) {
 module.exports.exec = function exec(expression, opts = {}) {
   const { Runtime } = this.protocol;
 
-  return Runtime.evaluate(Object.assign({
-    returnByValue: true,
-    includeCommandLineAPI: true,
-  }, opts, { expression }))
-  .then(({ result, exceptionDetails }) => {
-    if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
-    return result.value;
-  });
+  return Runtime
+    .evaluate(Object.assign({
+      returnByValue: true,
+      includeCommandLineAPI: true,
+    }, opts, { expression }))
+    .then(({ result, exceptionDetails }) => {
+      if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
+      return result.value;
+    });
 };

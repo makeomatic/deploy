@@ -54,9 +54,11 @@ exports.handler = (argv) => {
     }
 
     if (argv.no_cleanup !== true) {
-      echo('\nAutomatically cleaning up\n');
-      exec(`${dockerCompose} stop`);
-      exec(`${dockerCompose} rm -f -v`);
+      echo(`\nAutomatically cleaning up after ${signal}\n`);
+      exec(`${dockerCompose} stop; true`);
+      exec(`${dockerCompose} rm -f -v; true`);
+      // force exit now
+      if (signal === 'exit') process.exit(code || 0);
     } else {
       echo(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} stop;\n${dockerCompose} rm -f -v;\n`);
     }

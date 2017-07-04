@@ -1,38 +1,48 @@
 {
   "name": "@makeomatic/deploy",
-  "version": "1.9.6",
+  "version": "1.10.0",
   "description": "Common build and deploy tasks wrapped in a cli",
   "main": "./bin/index.js",
   "repository": "https://github.com/makeomatic/deploy.git",
   "author": "Vitaly Aminev <v@makeomatic.ca>",
   "license": "MIT",
   "scripts": {
+    "test": "./bin/cli.js test run --no-nycCoverage --test_framework \"jest --coverage --coverageDirectory <coverageDirectory>\" --tests __tests__/*.js --docker_compose __tests__/docker-compose.yml",
     "postversion": "npm publish --access public",
     "postpublish": "git push && git push --tags"
+  },
+  "engine": {
+    "node": ">= 7.6.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
     "babel-core": "^6.25.0",
     "babel-eslint": "^7.2.3",
+    "babel-jest": "^20.0.3",
     "babel-plugin-istanbul": "^4.1.4",
     "babel-plugin-transform-strict-mode": "^6.24.1",
     "babel-register": "^6.24.1",
-    "chrome-remote-interface": "^0.23.2",
-    "eslint": "^3.19.0",
+    "cross-env": "^5.0.1",
+    "eslint": "^4.1.1",
     "eslint-config-makeomatic": "^1.0.1",
-    "eslint-plugin-import": "^2.3.0",
+    "eslint-plugin-import": "^2.6.1",
     "eslint-plugin-promise": "^3.5.0",
-    "lighthouse": "^2.1.0"
+    "jest": "^20.0.4",
+    "nyc": "^11.0.3"
   },
   "dependencies": {
     "bluebird": "^3.5.0",
+    "chrome-launcher": "^0.3.0",
+    "chrome-remote-interface": "^0.23.3",
     "death": "^1.1.0",
     "glob": "^7.1.2",
     "is": "^3.2.1",
+    "lighthouse-logger": "^1.0.0",
     "ms-conf": "^3.1.2",
     "npm-path": "^2.0.3",
+    "rimraf": "^2.6.1",
     "shelljs": "^0.7.8",
-    "yargs": "^8.0.1"
+    "yargs": "^8.0.2"
   },
   "bin": {
     "mdep": "./bin/cli.js"
@@ -40,12 +50,10 @@
   "peerDependencies": {
     "babel-plugin-istanbul": "^4.1.1",
     "babel-register": "^6.24.0",
-    "chrome-remote-interface": "^0.23.1",
     "codecov": "^2.1.0",
-    "cross-env": "^4.0.0 || ^5.0.0",
-    "lighthouse": "^2.1.0",
+    "cross-env": "^5.0.0",
     "mocha": "^3.2.0",
-    "nyc": "^10.2.0 || ^11.0.0"
+    "nyc": "^11.0.0"
   },
   "files": [
     "bin/",

@@ -1,0 +1,14 @@
+version: '3'
+
+services:
+  tester:
+    image: makeomatic/node:8.1.3-vips-tester-chrome
+    container_name: tester
+    hostname: tester
+    working_dir: /src
+    volumes:
+      - ${PWD}:/src
+    environment:
+      NODE_ENV: test
+      LIGHTHOUSE_CHROMIUM_PATH: /usr/bin/chromium-browser
+    command: tail -f /dev/null

@@ -87,6 +87,11 @@ exports.builder = yargs => (
       default: [],
       array: true,
     })
+    .option('nycCoverage', {
+      describe: 'set to --no-nycCoverage to disable it',
+      boolean: true,
+      default: true,
+    })
     .help()
 );
 exports.handler = () => {};
