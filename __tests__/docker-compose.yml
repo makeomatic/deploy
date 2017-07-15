@@ -2,7 +2,7 @@ version: '3'
 
 services:
   tester:
-    image: makeomatic/node:8.1.3-vips-tester-chrome
+    image: makeomatic/node:8.1.4-chrome-tester
     container_name: tester
     hostname: tester
     working_dir: /src

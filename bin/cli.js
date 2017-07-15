@@ -2,20 +2,23 @@
 
 const path = require('path');
 const fs = require('fs');
+const findUp = require('find-up');
 
 let parentProject;
 try {
   // eslint-disable-next-line import/no-dynamic-require
   parentProject = require(`${process.cwd()}/package.json`);
   if (!parentProject.version) {
-    // eslint-disable-next-line no-console
-    console.warn('package.json missing version');
+    throw new Error('package.json missing version');
   }
 } catch (e) {
   throw new Error(`Must contain package.json in the current dir: ${e.message}`);
 }
 
-const version = parentProject.version || '1.0.0';
+// get configPath if it's there
+const configPath = findUp.sync(['.mdeprc', '.mdeprc.js', '.mdeprc.json']);
+// eslint-disable-next-line import/no-dynamic-require
+const config = configPath ? require(configPath) : {};
 
 require('yargs')
   .commandDir('cmds')
@@ -23,7 +26,7 @@ require('yargs')
   .option('node', {
     alias: 'n',
     describe: 'node version to use when building',
-    default: '7.8.0',
+    default: '8.1.4',
   })
   .option('env', {
     alias: 'E',
@@ -34,13 +37,18 @@ require('yargs')
     alias: 'p',
     describe: 'project name where this is used',
     default: parentProject.name
-      .replace(/\//g, '-')
-      .replace(/@/g, ''),
+      .replace(/^@[^/]/, ''),
+  })
+  .option('repository', {
+    alias: 'repo',
+    describe: 'docker repository to use',
+    default: parentProject.name
+      .replace(/^(?:@([^/]+)?\/)?.*$/, '$1') || 'makeomatic',
   })
   .option('version', {
     alias: 'v',
     describe: 'version of the project to build',
-    default: version,
+    default: parentProject.version,
   })
   .option('pkg', {
     describe: 'package json path',
@@ -49,5 +57,6 @@ require('yargs')
   .coerce({
     pkg: arg => JSON.parse(fs.readFileSync(path.resolve(arg))),
   })
+  .config(config)
   .help()
   .argv;

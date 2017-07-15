@@ -8,11 +8,6 @@ exports.command = 'docker';
 exports.desc = 'manages docker lifecycle';
 exports.builder = yargs => (
   yargs.commandDir('docker_cmds')
-    .option('repository', {
-      alias: 'repo',
-      describe: 'docker repository to use',
-      default: 'makeomatic',
-    })
     .option('include_node', {
       alias: 'in',
       describe: 'includes node version in the tag',
