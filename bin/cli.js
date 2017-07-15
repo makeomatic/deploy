@@ -37,7 +37,7 @@ require('yargs')
     alias: 'p',
     describe: 'project name where this is used',
     default: parentProject.name
-      .replace(/^@[^/]/, ''),
+      .replace(/^@[^/]\//, ''),
   })
   .option('repository', {
     alias: 'repo',
