@@ -18,7 +18,7 @@ try {
 // get configPath if it's there
 const configPath = findUp.sync(['.mdeprc', '.mdeprc.js', '.mdeprc.json']);
 // eslint-disable-next-line import/no-dynamic-require
-const config = configPath ? require(configPath) : {};
+const config = configPath ? JSON.parse(fs.readFileSync(configPath)) : {};
 
 require('yargs')
   .commandDir('cmds')
