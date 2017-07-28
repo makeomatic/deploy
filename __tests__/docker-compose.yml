@@ -2,7 +2,7 @@ version: '3'
 
 services:
   tester:
-    image: makeomatic/node:8.1.4-chrome-tester
+    image: makeomatic/node:8.2.1-chrome-tester
     container_name: tester
     hostname: tester
     working_dir: /src
@@ -10,5 +10,5 @@ services:
       - ${PWD}:/src
     environment:
       NODE_ENV: test
-      LIGHTHOUSE_CHROMIUM_PATH: /usr/bin/chromium-browser
+      CHROME_PATH: /usr/bin/chromium-browser
     command: tail -f /dev/null
