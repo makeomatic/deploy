@@ -47,7 +47,7 @@ function addPlugin(scriptName, script, holder) {
 [
   ['analyzeCommits', 'simple-commit-message', 'release'],
   ['generateNotes', 'github-post-release', 'release'],
-  ['verifyConditions', '@makeomatic/condition-codeship', 'release'],
+  ['verifyConditions', '@makeomatic/condition-semaphore', 'release'],
   ['branch', 'master', 'release'],
   ['semantic-release', 'semantic-release pre && npm publish && semantic-release post', 'scripts'],
   ['commit', 'simple-commit-message', 'scripts'],
