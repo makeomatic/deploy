@@ -1,15 +1,19 @@
 {
   "name": "@makeomatic/deploy",
-  "version": "1.12.2",
+  "version": "0.0.0-development",
   "description": "Common build and deploy tasks wrapped in a cli",
   "main": "./bin/index.js",
   "repository": "https://github.com/makeomatic/deploy.git",
   "author": "Vitaly Aminev <v@makeomatic.ca>",
   "license": "MIT",
   "scripts": {
-    "test": "./bin/cli.js test run --no-nycCoverage --test_framework \"jest --coverage --coverageDirectory <coverageDirectory>\" --tests __tests__/*.js --docker_compose __tests__/docker-compose.yml",
-    "postversion": "npm publish --access public",
-    "postpublish": "git push && git push --tags"
+    "test": "./bin/cli.js test run",
+    "postinstall": "node ./scripts/setup-semantic-release.js",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
+    "commit": "simple-commit-message"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "engine": {
     "node": ">= 7.6.0"
@@ -23,7 +27,7 @@
     "babel-plugin-transform-strict-mode": "^6.24.1",
     "babel-register": "^6.24.1",
     "cross-env": "^5.0.1",
-    "eslint": "^4.2.0",
+    "eslint": "^4.3.0",
     "eslint-config-makeomatic": "^1.0.1",
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-promise": "^3.5.0",
@@ -31,18 +35,24 @@
     "nyc": "^11.0.3"
   },
   "dependencies": {
+    "@makeomatic/condition-semaphore": "^1.0.1",
+    "am-i-a-dependency": "^1.0.0",
     "bluebird": "^3.5.0",
-    "chrome-launcher": "^0.3.1",
+    "chrome-launcher": "^0.3.2",
     "chrome-remote-interface": "^0.24.2",
     "death": "^1.1.0",
     "find-up": "^2.1.0",
+    "github-post-release": "^1.12.1",
     "glob": "^7.1.2",
     "is": "^3.2.1",
     "lighthouse-logger": "^1.0.0",
     "ms-conf": "^3.1.2",
     "npm-path": "^2.0.3",
+    "pre-git": "^3.15.0",
     "rimraf": "^2.6.1",
+    "semantic-release": "^6.3.6",
     "shelljs": "^0.7.8",
+    "simple-commit-message": "^3.3.1",
     "yargs": "^8.0.2"
   },
   "bin": {
@@ -58,6 +68,23 @@
   },
   "files": [
     "bin/",
-    "templates/"
-  ]
+    "templates/",
+    "scripts/"
+  ],
+  "release": {
+    "analyzeCommits": "simple-commit-message",
+    "generateNotes": "github-post-release",
+    "branch": "master",
+    "verifyConditions": "@makeomatic/condition-semaphore"
+  },
+  "config": {
+    "pre-git": {
+      "commit-msg": "simple",
+      "pre-commit": [],
+      "pre-push": [],
+      "post-commit": [],
+      "post-checkout": [],
+      "post-merge": []
+    }
+  }
 }
