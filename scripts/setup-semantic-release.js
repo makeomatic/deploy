@@ -9,7 +9,9 @@ const fs = require('fs');
 const isForced = process.argv.some(a => a === '--force');
 
 function amIaDependency() {
-  const cwd = process.cwd();
+  const cwd = typeof __dirname !== 'undefined' && __dirname
+    ? path.resolve(__dirname, '..')
+    : process.cwd();
   const parts = cwd.split(path.sep);
   const parentFolder = parts[parts.length - 2];
   const scopedParentFodler = parts[parts.length - 3];
