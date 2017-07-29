@@ -27,7 +27,7 @@ if (!amIaDependency() && !isForced) {
 debug('installing this module as a dependency');
 
 function clientPackageJsonFilename() {
-  return path.join(process.cwd(), '..', '..', 'package.json');
+  return path.join(process.cwd(), '..', '..', '..', 'package.json');
 }
 
 function alreadyInstalled(scriptName, script, holder) {
