@@ -2,9 +2,9 @@
 # yarn lockfile v1
 
 
-"@makeomatic/condition-semaphore@^1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@makeomatic/condition-semaphore/-/condition-semaphore-1.0.1.tgz#a7868a639b4b266f46b52af57c2b8684414a3688"
+"@makeomatic/condition-semaphore@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@makeomatic/condition-semaphore/-/condition-semaphore-1.0.2.tgz#e393b2ee63b6798320d3642b68955e4d1563742b"
   dependencies:
     "@semantic-release/error" "^1.0.0"
     semver "^5.1.0"
@@ -132,7 +132,7 @@ always-error@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/always-error/-/always-error-1.0.0.tgz#95c84042cfa86f38c86ca6c2cc42c0a0103441b2"
 
-am-i-a-dependency@1.0.0, am-i-a-dependency@^1.0.0:
+am-i-a-dependency@1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/am-i-a-dependency/-/am-i-a-dependency-1.0.0.tgz#7c0e2eb126045350852e26e44f6781b3ed387919"
 

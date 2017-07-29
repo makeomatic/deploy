@@ -3,11 +3,18 @@
 /* eslint-disable import/no-dynamic-require, no-console */
 
 const debug = require('debug')('github-post-release');
-const amIaDependency = require('am-i-a-dependency');
 const path = require('path');
 const fs = require('fs');
 
 const isForced = process.argv.some(a => a === '--force');
+
+function amIaDependency() {
+  const cwd = process.cwd();
+  const parts = cwd.split(path.sep);
+  const parentFolder = parts[parts.length - 2];
+  const scopedParentFodler = parts[parts.length - 3];
+  return parentFolder === 'node_modules' || scopedParentFodler === 'node_modules';
+}
 
 if (!amIaDependency() && !isForced) {
   // top level install (we are running `npm i` in this project)
