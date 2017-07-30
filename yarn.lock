@@ -9,9 +9,9 @@
     "@semantic-release/error" "^1.0.0"
     semver "^5.1.0"
 
-"@makeomatic/last-release-npm@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@makeomatic/last-release-npm/-/last-release-npm-1.0.0.tgz#0525977154a72ea2806d04759704d72c5d2aee36"
+"@makeomatic/last-release-npm@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@makeomatic/last-release-npm/-/last-release-npm-1.0.1.tgz#40b4b8fbad6eb89433d3d36e13a11b48735ad59c"
   dependencies:
     "@semantic-release/error" "^1.0.0"
     npm-registry-client "^8.4.0"
