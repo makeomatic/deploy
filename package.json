@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@makeomatic/condition-semaphore": "^1.0.2",
+    "@makeomatic/last-release-npm": "^1.0.0",
     "bluebird": "^3.5.0",
     "chrome-launcher": "^0.3.2",
     "chrome-remote-interface": "^0.24.3",
@@ -75,7 +76,8 @@
     "analyzeCommits": "simple-commit-message",
     "generateNotes": "github-post-release",
     "branch": "master",
-    "verifyConditions": "@makeomatic/condition-semaphore"
+    "verifyConditions": "@makeomatic/condition-semaphore",
+    "getLastRelease": "@makeomatic/last-release-npm"
   },
   "config": {
     "pre-git": {
