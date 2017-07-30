@@ -30,6 +30,10 @@ function clientPackageJsonFilename() {
   return path.join(process.cwd(), '..', '..', '..', 'package.json');
 }
 
+function gitItOldModules(name) {
+  return path.join(process.cwd(), '..', '..', '..', 'node_modules', 'git-it', 'node_modules', name);
+}
+
 function alreadyInstalled(scriptName, script, holder) {
   const filename = clientPackageJsonFilename();
   const pkg = JSON.parse(fs.readFileSync(filename));
@@ -70,3 +74,8 @@ function addPlugin(scriptName, script, holder) {
 
 console.log('⚠️ Use "semantic-release-cli setup" to complete setting up semantic-release');
 console.log('⚠️ For scoped packages add {"publishConfig":{"access": "public"}} to package.json');
+
+if (fs.existsSync(gitItOldModules('simple-commit-message'))) {
+  console.log('⚠️ Removed "simple-commit-message" from git-it dependencies');
+  fs.rmdirSync(gitItOldModules('simple-commit-message'));
+}

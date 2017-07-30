@@ -33,13 +33,13 @@
     "eslint-plugin-import": "^2.7.0",
     "eslint-plugin-promise": "^3.5.0",
     "jest": "^20.0.4",
-    "nyc": "^11.0.3"
+    "nyc": "^11.1.0"
   },
   "dependencies": {
     "@makeomatic/condition-semaphore": "^1.0.2",
     "bluebird": "^3.5.0",
     "chrome-launcher": "^0.3.2",
-    "chrome-remote-interface": "^0.24.2",
+    "chrome-remote-interface": "^0.24.3",
     "death": "^1.1.0",
     "find-up": "^2.1.0",
     "github-post-release": "^1.12.2",
