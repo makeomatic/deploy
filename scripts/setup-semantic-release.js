@@ -5,6 +5,7 @@
 const debug = require('debug')('github-post-release');
 const path = require('path');
 const fs = require('fs');
+const rimraf = require('rimraf');
 
 const isForced = process.argv.some(a => a === '--force');
 
@@ -77,6 +78,6 @@ console.log('⚠️ Use "semantic-release-cli setup" to complete setting up sema
 console.log('⚠️ For scoped packages add {"publishConfig":{"access": "public"}} to package.json');
 
 if (fs.existsSync(preGitOldModules('simple-commit-message'))) {
-  console.log('⚠️ Removed "simple-commit-message" from git-it dependencies');
-  fs.rmdirSync(preGitOldModules('simple-commit-message'));
+  rimraf.sync(preGitOldModules('simple-commit-message'));
+  console.log('⚠️ Removed "simple-commit-message" from pre-git dependencies');
 }
