@@ -2,7 +2,7 @@ version: '2'
 
 services:
   tester:
-  image: makeomatic/node:7.8.0-tester
+  image: makeomatic/node:8.2.1-tester
   working_dir: /src
   volumes:
     - ${PWD}:/src
