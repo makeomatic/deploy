@@ -2,3 +2,4 @@
 --timeout 60000
 --bail
 -R spec
+--forbid-only
