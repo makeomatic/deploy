@@ -746,7 +746,7 @@ camelcase@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-3.0.0.tgz#32fc4b9fcdaf845fcdf7e73bb97cac2261f0ab0a"
 
-camelcase@^4.0.0, camelcase@^4.1.0:
+camelcase@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-4.1.0.tgz#d545635be1e33c542649c69173e5de6acfae34dd"
 
@@ -782,6 +782,14 @@ chalk@^1.0.0, chalk@^1.1.0, chalk@^1.1.1, chalk@^1.1.3:
     has-ansi "^2.0.0"
     strip-ansi "^3.0.0"
     supports-color "^2.0.0"
+
+chalk@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.1.0.tgz#ac5becf14fa21b99c6c92ca7a7d7cfd5b17e743e"
+  dependencies:
+    ansi-styles "^3.1.0"
+    escape-string-regexp "^1.0.5"
+    supports-color "^4.0.0"
 
 chdir-promise@0.4.1:
   version "0.4.1"
@@ -820,9 +828,9 @@ chokidar@^1.6.1:
   optionalDependencies:
     fsevents "^1.0.0"
 
-chrome-launcher@^0.5.0:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/chrome-launcher/-/chrome-launcher-0.5.0.tgz#040a87de692a04bc4666efc7e4bb28f7bb6773b9"
+chrome-launcher@^0.6.0:
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/chrome-launcher/-/chrome-launcher-0.6.0.tgz#323830e0ef24dae6ba2698c00d249755557a01fb"
   dependencies:
     "@types/core-js" "^0.9.41"
     "@types/mkdirp" "^0.3.29"
@@ -1261,13 +1269,13 @@ debug-log@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/debug-log/-/debug-log-1.0.1.tgz#2307632d4c04382b8df8a32f70b895046d52745f"
 
-debug@2, debug@2.6.8, debug@^2.1.1, debug@^2.2.0, debug@^2.6.0, debug@^2.6.3, debug@^2.6.8:
+debug@2, debug@2.6.8, debug@^2.1.1, debug@^2.2.0, debug@^2.6.3, debug@^2.6.8:
   version "2.6.8"
   resolved "https://registry.yarnpkg.com/debug/-/debug-2.6.8.tgz#e731531ca2ede27d188222427da17821d68ff4fc"
   dependencies:
     ms "2.0.0"
 
-debug@3.0.0:
+debug@3.0.0, debug@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/debug/-/debug-3.0.0.tgz#1d2feae53349047b08b264ec41906ba17a8516e4"
   dependencies:
@@ -1445,13 +1453,13 @@ eslint-scope@^3.7.1:
     esrecurse "^4.1.0"
     estraverse "^4.1.1"
 
-eslint@^4.4.1:
-  version "4.4.1"
-  resolved "https://registry.yarnpkg.com/eslint/-/eslint-4.4.1.tgz#99cd7eafcffca2ff99a5c8f5f2a474d6364b4bd3"
+eslint@^4.5.0:
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-4.5.0.tgz#bb75d3b8bde97fb5e13efcd539744677feb019c3"
   dependencies:
     ajv "^5.2.0"
     babel-code-frame "^6.22.0"
-    chalk "^1.1.3"
+    chalk "^2.1.0"
     concat-stream "^1.6.0"
     cross-spawn "^5.1.0"
     debug "^2.6.8"
@@ -1482,6 +1490,7 @@ eslint@^4.4.1:
     progress "^2.0.0"
     require-uncached "^1.0.3"
     semver "^5.3.0"
+    strip-ansi "^4.0.0"
     strip-json-comments "~2.0.1"
     table "^4.0.1"
     text-table "~0.2.0"
@@ -3187,15 +3196,15 @@ moment@2.18.1:
   version "2.18.1"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.18.1.tgz#c36193dd3ce1c2eed2adb7c802dbbc77a81b1c0f"
 
-ms-conf@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/ms-conf/-/ms-conf-3.1.2.tgz#f440bb64f212f2837106174d0ed7ee5566fd239c"
+ms-conf@^3.2.0:
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/ms-conf/-/ms-conf-3.2.0.tgz#54dedbeb64be32fe258bc9f97aaed98966a246c9"
   dependencies:
-    camelcase "^4.0.0"
+    camelcase "^4.1.0"
     confidence "^3.0.2"
-    debug "^2.6.0"
+    debug "^3.0.0"
     dotenv "^4.0.0"
-    glob "^7.1.1"
+    glob "^7.1.2"
     lodash.merge "^4.6.0"
     lodash.reduce "^4.6.0"
     lodash.uniq "^4.5.0"

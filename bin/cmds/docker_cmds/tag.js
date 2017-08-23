@@ -1,7 +1,7 @@
 /**
  * Tags docker images
  */
-
+const assert = require('assert');
 const { exec } = require('shelljs');
 
 exports.command = 'tag';
@@ -12,6 +12,6 @@ exports.handler = (argv) => {
   const { mainTag, tags } = argv;
 
   tags.forEach(tag => (
-    exec(`docker tag ${mainTag} ${tag}`)
+    assert.equal(exec(`docker tag ${mainTag} ${tag}`).code, 0, 'failed to tag')
   ));
 };

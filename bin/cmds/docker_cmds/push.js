@@ -2,6 +2,7 @@
  * Builds docker images
  */
 
+const assert = require('assert');
 const { exec } = require('shelljs');
 
 exports.command = 'push';
@@ -12,6 +13,6 @@ exports.handler = (argv) => {
   const { mainTag, tags } = argv;
 
   [mainTag, ...tags].forEach(tag => (
-    exec(`docker push ${tag}`)
+    assert.equal(exec(`docker push ${tag}`).code, 0, 'failed to push')
   ));
 };
