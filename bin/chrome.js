@@ -18,7 +18,7 @@ const _SIGINT_EXIT_CODE = 130;
 function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
   const settings = Object.assign({
     rimraf,
-    logLevel: 'verbose',
+    logLevel: 'info',
     chromeFlags: [
       '--window-size=1024,768',
       '--disable-gpu',
