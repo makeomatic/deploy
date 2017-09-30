@@ -21,12 +21,13 @@ const configPath = findUp.sync(['.mdeprc', '.mdeprc.js', '.mdeprc.json']);
 const config = configPath ? JSON.parse(fs.readFileSync(configPath)) : {};
 
 require('yargs')
+  .version(false)
   .commandDir('cmds')
   .demandCommand()
   .option('node', {
     alias: 'n',
     describe: 'node version to use when building',
-    default: '8.1.4',
+    default: '8.6.0',
   })
   .option('env', {
     alias: 'E',

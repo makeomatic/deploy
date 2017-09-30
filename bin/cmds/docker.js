@@ -3,6 +3,8 @@
  * @type {String}
  */
 
+const assert = require('assert');
+
 exports.called = false;
 exports.command = 'docker';
 exports.desc = 'manages docker lifecycle';
@@ -24,6 +26,8 @@ exports.builder = yargs => (
 );
 exports.handler = (argv) => {
   if (exports.called) return;
+
+  assert.ok(typeof argv.version === 'string', `version is ${argv.version}`);
 
   // prepares variables
   argv.base = `${argv.repository}/${argv.project}`;
