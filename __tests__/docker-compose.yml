@@ -2,7 +2,7 @@ version: '3'
 
 services:
   tester:
-    image: makeomatic/node:8.6.0-chrome-tester
+    image: makeomatic/node:8.9.0-chrome-tester
     container_name: tester
     hostname: tester
     working_dir: /src
