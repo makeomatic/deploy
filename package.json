@@ -12,7 +12,8 @@
   "scripts": {
     "test": "./bin/cli.js test run",
     "postinstall": "node ./scripts/setup-semantic-release.js",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "commitmsg": "commitlint -e $GIT_PARAMS"
   },
   "publishConfig": {
     "access": "public"
@@ -37,6 +38,7 @@
     "nyc": "^11.4.1"
   },
   "dependencies": {
+    "@commitlint/cli": "^5.2.8",
     "@makeomatic/condition-semaphore": "^2.0.0",
     "bluebird": "^3.5.1",
     "chrome-launcher": "^0.10.0",
@@ -44,11 +46,11 @@
     "death": "^1.1.0",
     "find-up": "^2.1.0",
     "glob": "^7.1.2",
+    "husky": "^0.14.3",
     "is": "^3.2.1",
     "lighthouse-logger": "^1.0.1",
     "ms-conf": "^3.2.0",
     "npm-path": "^2.0.3",
-    "pre-git": "^3.17.0",
     "rimraf": "^2.6.2",
     "semantic-release": "^12.0.0",
     "shelljs": "^0.7.8",
@@ -69,15 +71,5 @@
     "bin/",
     "templates/",
     "scripts/"
-  ],
-  "config": {
-    "pre-git": {
-      "commit-msg": "simple",
-      "pre-commit": [],
-      "pre-push": [],
-      "post-commit": [],
-      "post-checkout": [],
-      "post-merge": []
-    }
-  }
+  ]
 }

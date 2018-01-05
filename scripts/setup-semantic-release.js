@@ -30,15 +30,15 @@ function clientPackageJsonFilename() {
   return path.join(process.cwd(), '..', '..', '..', 'package.json');
 }
 
-async function copyReleaseRC() {
-  const rcpath = path.join(process.cwd(), '..', '..', '..', '.releaserc.json');
+function copyConfiguration(filename) {
+  const rcpath = path.join(process.cwd(), '..', '..', '..', filename);
   const stat = fs.statSync(rcpath);
 
   // do not overwrite
   if (stat.isFile() === true) return;
 
   // copy over
-  fs.copyFileSync(path.join(__dirname, '../.releaserc.json'), rcpath);
+  fs.copyFileSync(path.join(__dirname, '..', filename), rcpath);
 }
 
 function alreadyInstalled(scriptName, script, holder) {
@@ -74,7 +74,8 @@ function addPlugin(scriptName, script, holder) {
   }
 });
 
-copyReleaseRC();
+copyConfiguration('.releaserc.json');
+copyConfiguration('.commitlintrc.js');
 
 console.log('⚠️ Use "semantic-release-cli setup" to complete setting up semantic-release');
 console.log('⚠️ For scoped packages add {"publishConfig":{"access": "public"}} to package.json');
