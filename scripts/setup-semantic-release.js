@@ -32,10 +32,15 @@ function clientPackageJsonFilename() {
 
 function copyConfiguration(filename) {
   const rcpath = path.join(process.cwd(), '..', '..', '..', filename);
-  const stat = fs.statSync(rcpath);
+  let stat;
 
-  // do not overwrite
-  if (stat.isFile() === true) return;
+  try {
+    stat = fs.statSync(rcpath);
+    // do not overwrite
+    if (stat.isFile() === true) return;
+  } catch (e) {
+    // no file - write a new one down
+  }
 
   // copy over
   fs.copyFileSync(path.join(__dirname, '..', filename), rcpath);
