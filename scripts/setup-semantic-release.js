@@ -30,49 +30,21 @@ function clientPackageJsonFilename() {
   return path.join(process.cwd(), '..', '..', '..', 'package.json');
 }
 
-function equal(a, b) {
-  if (a === b) return true;
+async function copyReleaseRC() {
+  const rcpath = path.join(process.cwd(), '..', '..', '..', '.releaserc.json');
+  const stat = fs.statSync(rcpath);
 
-  const arrA = Array.isArray(a);
-  const arrB = Array.isArray(b);
-  let i;
+  // do not overwrite
+  if (stat.isFile() === true) return;
 
-  if (arrA && arrB) {
-    if (a.length !== b.length) return false;
-    for (i = 0; i < a.length; i += 1) { if (!equal(a[i], b[i])) return false; }
-    return true;
-  }
-
-  if (arrA !== arrB) return false;
-
-  if (a && b && typeof a === 'object' && typeof b === 'object') {
-    const keys = Object.keys(a);
-    if (keys.length !== Object.keys(b).length) return false;
-
-    const dateA = a instanceof Date;
-    const dateB = b instanceof Date;
-    if (dateA && dateB) return a.getTime() === b.getTime();
-    if (dateA !== dateB) return false;
-
-    const regexpA = a instanceof RegExp;
-    const regexpB = b instanceof RegExp;
-    if (regexpA && regexpB) return a.toString() === b.toString();
-    if (regexpA !== regexpB) return false;
-
-    for (i = 0; i < keys.length; i += 1) { if (!Object.prototype.hasOwnProperty.call(b, keys[i])) return false; }
-
-    for (i = 0; i < keys.length; i += 1) { if (!equal(a[keys[i]], b[keys[i]])) return false; }
-
-    return true;
-  }
-
-  return false;
+  // copy over
+  fs.copyFileSync(path.join(__dirname, '../.releaserc.json'), rcpath);
 }
 
 function alreadyInstalled(scriptName, script, holder) {
   const filename = clientPackageJsonFilename();
   const pkg = JSON.parse(fs.readFileSync(filename));
-  if (!pkg[holder] || !pkg[holder][scriptName] || equal(pkg[holder][scriptName], script) !== true) {
+  if (!pkg[holder] || !pkg[holder][scriptName] || pkg[holder][scriptName] !== script) {
     return false;
   }
 
@@ -93,20 +65,6 @@ function addPlugin(scriptName, script, holder) {
 }
 
 [
-  ['analyzeCommits', {
-    preset: 'angular',
-    releaseRules: [
-      { type: 'docs', release: 'patch' },
-      { type: 'refactor', release: 'patch' },
-      { type: 'style', release: 'patch' },
-      { type: 'minor', release: 'minor' },
-      { type: 'patch', release: 'patch' },
-      { type: 'major', release: 'major' },
-      { type: 'breaking', release: 'major' },
-    ],
-  }, 'release'],
-  ['verifyConditions', ['@semantic-release/npm', '@semantic-release/github'], 'release'],
-  ['branch', 'master', 'release'],
   ['semantic-release', 'semantic-release', 'scripts'],
 ].forEach((input) => {
   const [scriptName, name, holder] = input;
@@ -115,6 +73,8 @@ function addPlugin(scriptName, script, holder) {
     addPlugin(scriptName, name, holder);
   }
 });
+
+copyReleaseRC();
 
 console.log('⚠️ Use "semantic-release-cli setup" to complete setting up semantic-release');
 console.log('⚠️ For scoped packages add {"publishConfig":{"access": "public"}} to package.json');

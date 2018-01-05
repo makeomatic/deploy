@@ -3,7 +3,10 @@
   "version": "0.0.0-development",
   "description": "Common build and deploy tasks wrapped in a cli",
   "main": "./bin/index.js",
-  "repository": "https://github.com/makeomatic/deploy.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/makeomatic/deploy.git"
+  },
   "author": "Vitaly Aminev <v@makeomatic.ca>",
   "license": "MIT",
   "scripts": {
@@ -40,7 +43,6 @@
     "chrome-remote-interface": "^0.25.5",
     "death": "^1.1.0",
     "find-up": "^2.1.0",
-    "github-post-release": "^1.13.1",
     "glob": "^7.1.2",
     "is": "^3.2.1",
     "lighthouse-logger": "^1.0.1",
@@ -68,22 +70,6 @@
     "templates/",
     "scripts/"
   ],
-  "release": {
-    "branch": "master",
-    "verifyConditions": ["@semantic-release/npm", "@semantic-release/github"],
-    "analyzeCommits": {
-      "preset": "angular",
-      "releaseRules": [
-        { "type": "docs", "release": "patch" },
-        { "type": "refactor", "release": "patch" },
-        { "type": "style", "release": "patch" },
-        { "type": "minor", "release": "minor" },
-        { "type": "patch", "release": "patch" },
-        { "type": "major", "release": "major" },
-        { "type": "breaking", "release": "major" }
-      ]
-    }
-  },
   "config": {
     "pre-git": {
       "commit-msg": "simple",
