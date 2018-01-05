@@ -57,7 +57,9 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
     .resolve(initChrome())
     .then(initProtocol)
     .then(({ protocol, launcher }) => {
-      const { Page, Network, Runtime, DOM, Console } = protocol;
+      const {
+        Page, Network, Runtime, DOM, Console,
+      } = protocol;
 
       protocol.idleDelay = 500;
       protocol.evictionDelay = 5000;
@@ -360,15 +362,9 @@ module.exports.submit = function submit(selector, timeout = 30000) {
             Log.verbose('Completed evaluate', result.value);
             return result.value;
           })
-          .tap(coordinates => Input.dispatchMouseEvent(Object.assign(
-            { type: 'mouseMoved' }, coordinates
-          )))
-          .tap(coordinates => Input.dispatchMouseEvent(Object.assign(
-            { type: 'mousePressed', button: 'left', clickCount: 1 }, coordinates
-          )))
-          .tap(coordinates => Input.dispatchMouseEvent(Object.assign(
-            { type: 'mouseReleased', button: 'left', clickCount: 1 }, coordinates
-          )))
+          .tap(coordinates => Input.dispatchMouseEvent(Object.assign({ type: 'mouseMoved' }, coordinates)))
+          .tap(coordinates => Input.dispatchMouseEvent(Object.assign({ type: 'mousePressed', button: 'left', clickCount: 1 }, coordinates)))
+          .tap(coordinates => Input.dispatchMouseEvent(Object.assign({ type: 'mouseReleased', button: 'left', clickCount: 1 }, coordinates)))
       ));
     });
 };

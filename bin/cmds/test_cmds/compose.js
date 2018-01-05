@@ -6,7 +6,9 @@
 const npmPath = require('npm-path');
 const path = require('path');
 const onDeath = require('death')({ SIGHUP: true, exit: true });
-const { exec, echo, which, exit, mkdir, chmod, ShellString } = require('shelljs');
+const {
+  exec, echo, which, exit, mkdir, chmod, ShellString,
+} = require('shelljs');
 
 exports.command = 'compose';
 exports.desc = 'installs compose on the system';

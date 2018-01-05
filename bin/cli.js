@@ -27,7 +27,7 @@ require('yargs')
   .option('node', {
     alias: 'n',
     describe: 'node version to use when building',
-    default: '9.2.0',
+    default: '9.3.0',
   })
   .option('env', {
     alias: 'E',
@@ -38,7 +38,7 @@ require('yargs')
     alias: 'p',
     describe: 'project name where this is used',
     default: parentProject.name
-      .replace(/^@[^/]\//, ''),
+      .replace(/^@[^/]+\//, ''),
   })
   .option('repository', {
     alias: 'repo',
