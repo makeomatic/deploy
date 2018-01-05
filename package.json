@@ -70,6 +70,8 @@
   "files": [
     "bin/",
     "templates/",
-    "scripts/"
+    "scripts/",
+    ".releaserc.json",
+    ".commitlintrc.js"
   ]
 }
