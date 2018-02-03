@@ -38,7 +38,7 @@
     "nyc": "^11.4.1"
   },
   "dependencies": {
-    "@commitlint/cli": "^6.0.5",
+    "@commitlint/cli": "^6.1.0",
     "@makeomatic/condition-semaphore": "^2.0.0",
     "bluebird": "^3.5.1",
     "chrome-launcher": "^0.10.2",
@@ -71,6 +71,7 @@
     "bin/",
     "templates/",
     "scripts/",
+    "git-hooks",
     ".releaserc.json",
     ".commitlintrc.js"
   ]

@@ -72,6 +72,7 @@ function addPlugin(scriptName, script, holder) {
 [
   ['semantic-release', 'semantic-release', 'scripts'],
   ['commitmsg', 'commitlint -e $GIT_PARAMS', 'scripts'],
+  ['preparecommitmsg', './node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $GIT_PARAMS', 'scripts'],
 ].forEach((input) => {
   const [scriptName, name, holder] = input;
   if (!alreadyInstalled(scriptName, name, holder)) {
