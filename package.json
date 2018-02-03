@@ -24,24 +24,24 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
-    "babel-eslint": "^8.1.2",
+    "babel-eslint": "^8.2.1",
     "babel-plugin-istanbul": "^4.1.5",
     "babel-plugin-transform-strict-mode": "^6.24.1",
     "babel-register": "^6.26.0",
     "codecov": "^3.0.0",
     "cross-env": "^5.1.3",
-    "eslint": "^4.14.0",
+    "eslint": "^4.17.0",
     "eslint-config-makeomatic": "^2.0.1",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-promise": "^3.6.0",
-    "jest": "^22.0.4",
+    "jest": "^22.1.4",
     "nyc": "^11.4.1"
   },
   "dependencies": {
-    "@commitlint/cli": "^5.2.8",
+    "@commitlint/cli": "^6.0.5",
     "@makeomatic/condition-semaphore": "^2.0.0",
     "bluebird": "^3.5.1",
-    "chrome-launcher": "^0.10.0",
+    "chrome-launcher": "^0.10.2",
     "chrome-remote-interface": "^0.25.5",
     "death": "^1.1.0",
     "find-up": "^2.1.0",
@@ -50,22 +50,22 @@
     "is": "^3.2.1",
     "lighthouse-logger": "^1.0.1",
     "ms-conf": "^3.2.0",
-    "npm-path": "^2.0.3",
+    "npm-path": "^2.0.4",
     "rimraf": "^2.6.2",
-    "semantic-release": "^12.0.0",
-    "shelljs": "^0.7.8",
-    "yargs": "^10.0.3"
+    "semantic-release": "^12.4.1",
+    "shelljs": "^0.8.1",
+    "yargs": "^11.0.0"
   },
   "bin": {
     "mdep": "./bin/cli.js"
   },
   "peerDependencies": {
-    "babel-plugin-istanbul": "4.x.x",
-    "babel-register": "^6.24.0",
-    "codecov": "3.x.x",
-    "cross-env": "5.x.x",
-    "mocha": "4.x.x",
-    "nyc": "11.x.x"
+    "babel-plugin-istanbul": ">= 4.x.x",
+    "babel-register": ">= 6.24.0",
+    "codecov": ">= 3.x.x",
+    "cross-env": ">= 5.x.x",
+    "mocha": ">= 4.x.x",
+    "nyc": ">= 11.x.x"
   },
   "files": [
     "bin/",
