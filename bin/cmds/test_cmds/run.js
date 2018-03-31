@@ -95,6 +95,7 @@ exports.handler = async (argv) => {
   // upload codecoverage report
   if (argv.coverage) {
     echo('uploading coverage');
-    exec('./node_modules/.bin/codecov');
+    // this is to avoid exposing token
+    exec('./node_modules/.bin/codecov > /dev/null &2>1');
   }
 };
