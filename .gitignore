@@ -35,4 +35,4 @@ lib
 .babel
 .nyc_output
 pk.json
-ss
+ss/*.jpeg
