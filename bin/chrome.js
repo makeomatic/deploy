@@ -410,7 +410,7 @@ module.exports.captureResponse = function captureResponse(url, timeout = 30000) 
       }
     });
 
-    setTimeout(next, timeout, new Error('failed to get response'));
+    setTimeout(next, timeout, new Error(`failed to get response: ${url.toString()}`));
   });
 };
 
