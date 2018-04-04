@@ -5,8 +5,8 @@ const is = require('is');
 const assert = require('assert');
 const { Launcher } = require('chrome-launcher');
 const EventEmitter = require('events');
-const Log = require('lighthouse-logger');
 const rimraf = require('rimraf');
+const pino = require('pino')();
 
 const _SIGINT = 'SIGINT';
 const _SIGINT_EXIT_CODE = 130;
@@ -18,7 +18,6 @@ const _SIGINT_EXIT_CODE = 130;
 function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
   const settings = Object.assign({
     rimraf,
-    logLevel: 'info',
     chromeFlags: [
       '--window-size=1024,768',
       '--disable-gpu',
@@ -27,6 +26,12 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
     ],
     handleSIGINT: true,
   }, opts);
+
+  // use actual log level
+  pino.level = settings.logLevel;
+
+  /* rewrite for lighthouse logger */
+  settings.logLevel = 'error';
 
   const initChrome = async () => {
     const instance = new Launcher(settings, moduleOverrides);
@@ -70,7 +75,7 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
       let isIdle;
       const verifyIsIdle = () => {
         if (protocol.pending.size === 0) {
-          Log.verbose('idle', 'completed');
+          pino.debug('idle', 'completed');
           protocol.ee.emit('idle');
         } else {
           const requests = [];
@@ -79,7 +84,7 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
             requests.push(v.request.url);
           }
 
-          Log.verbose('pendingRequest', `[${requests.length}]`, requests.join(', '));
+          pino.debug('pendingRequest', `[${requests.length}]`, requests.join(', '));
         }
       };
 
@@ -87,7 +92,7 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
         const originalRequest = protocol.pending.get(params.requestId);
 
         // might fire twice with failed/finished handlers
-        Log.verbose(
+        pino.debug(
           evicted ? 'evicted' : 'responseReceived',
           `[pending=${protocol.pending.size}]`, originalRequest && originalRequest.request.url
         );
@@ -106,7 +111,7 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
       };
 
       Network.requestWillBeSent((params) => {
-        Log.verbose('requestWillBeSent', `[pending=${protocol.pending.size}]`, params.request.url);
+        pino.debug('requestWillBeSent', `[pending=${protocol.pending.size}]`, params.request.url);
 
         protocol.pending.set(params.requestId, params);
         protocol.timeouts.set(params.requestId, setTimeout(onLoad, protocol.evictionDelay, params, true));
@@ -119,7 +124,7 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
       Network.loadingFinished(onLoad);
 
       Console.messageAdded((params) => {
-        Log.verbose('console', params.message.text);
+        pino.debug('console', params.message.text);
       });
 
       return Promise
@@ -200,7 +205,7 @@ module.exports.captureScreenshot = function captureScreenshot(any) {
 module.exports.retry = function retry(timeout, name, fn) {
   const repeat = () => (
     fn().catch((err) => {
-      Log.verbose(name, 'failed to find node', err.message);
+      pino.debug(name, 'failed to find node', err.message);
       return Promise.delay(500).then(repeat);
     })
   );
@@ -251,7 +256,7 @@ module.exports.wait = function wait(_selector, timeout = 30000) {
         })
     ))
     .tap(() => module.exports.isIdle.call(this))
-    .tap(() => Log.verbose('wait', 'completed'))
+    .tap(() => pino.debug('wait', 'completed'))
     .return(selector);
 };
 
@@ -272,7 +277,7 @@ module.exports.type = function type(selector, text, timeout = 30000) {
       return Promise.resolve();
     }
 
-    Log.verbose('typing', 'Sending %s of %s', ch, text);
+    pino.debug('typing', 'Sending %s of %s', ch, text);
 
     return Promise
       .bind(Input)
@@ -309,7 +314,7 @@ module.exports.type = function type(selector, text, timeout = 30000) {
           expression: `${nodeSelector}.value = ''; ${nodeSelector}.focus();`,
         }))
         .tap(({ result, exceptionDetails }) => {
-          Log.verbose('Completed evaluate', result.description);
+          pino.debug('Completed evaluate', result.description);
           if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
         })
         .then(simulateTyping)
@@ -359,7 +364,7 @@ module.exports.submit = function submit(selector, timeout = 30000) {
           }))
           .then(({ result, exceptionDetails }) => {
             if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
-            Log.verbose('Completed evaluate', result.value);
+            pino.debug('Completed evaluate', result.value);
             return result.value;
           })
           .tap(coordinates => Input.dispatchMouseEvent(Object.assign({ type: 'mouseMoved' }, coordinates)))
@@ -397,7 +402,7 @@ module.exports.captureResponse = function captureResponse(url, timeout = 30000) 
   const { Network } = this.protocol;
   return Promise.fromCallback((next) => {
     Network.responseReceived((params) => {
-      Log.verbose('response:', params);
+      pino.debug('response:', params);
       if (url.test(params.response.url)) {
         const { response, requestId } = params;
         next(null, Object.assign({}, response, { requestId }));

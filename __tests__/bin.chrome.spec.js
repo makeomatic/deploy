@@ -1,3 +1,5 @@
+const Promise = require('bluebird');
+
 describe('chrome helpers', () => {
   const Chrome = require('../bin/chrome');
 
@@ -7,6 +9,15 @@ describe('chrome helpers', () => {
     expect(connection.protocol).toBeDefined();
     expect(connection.close).toBeDefined();
     this.chrome = connection;
+  });
+
+  it('renders facebook', async () => {
+    const context = this.chrome;
+    const { Page } = context.protocol;
+
+    Page.navigate({ url: 'https://facebook.com' });
+    await Page.loadEventFired();
+    await Promise.bind(context).then(Chrome.captureScreenshot);
   });
 
   afterAll(async () => (
