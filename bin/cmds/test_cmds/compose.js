@@ -30,8 +30,8 @@ exports.handler = (argv) => {
     // creating dir to make sure it exists
     mkdir('./node_modules/.bin');
 
-    const distribution = exec('uname -s').stdout;
-    const arch = exec('uname -m').stdout;
+    const distribution = exec('uname -s').stdout.trim();
+    const arch = exec('uname -m').stdout.trim();
     const link = `https://github.com/docker/compose/releases/download/${argv.dcv}/docker-compose-${distribution}-${arch}`;
     const curl = exec(`curl -L "${link}" -o ./node_modules/.bin/docker-compose`);
 
