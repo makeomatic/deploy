@@ -22,6 +22,6 @@ describe('chrome helpers', () => {
   });
 
   afterAll(async () => (
-    this.chrome ? this.chrome.close() : null
+    chrome ? chrome.close() : null
   ));
 });
