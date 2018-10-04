@@ -12,8 +12,7 @@
   "scripts": {
     "test": "./bin/cli.js test run",
     "postinstall": "node ./scripts/setup-semantic-release.js",
-    "semantic-release": "semantic-release",
-    "commitmsg": "commitlint -e $GIT_PARAMS"
+    "semantic-release": "semantic-release"
   },
   "publishConfig": {
     "access": "public"
@@ -48,6 +47,8 @@
     "glob": "^7.1.3",
     "husky": "^1.1.0",
     "is": "^3.2.1",
+    "lodash.get": "^4.4.2",
+    "lodash.set": "^4.3.2",
     "ms-conf": "^3.3.0",
     "npm-path": "^2.0.4",
     "pino": "^5.6.3",
@@ -73,5 +74,10 @@
   ],
   "jest": {
     "testURL": "http://tester.local"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
+    }
   }
 }

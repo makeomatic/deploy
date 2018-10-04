@@ -4,6 +4,8 @@
 
 const debug = require('debug')('makeomatic:deploy');
 const path = require('path');
+const get = require('lodash.get');
+const set = require('lodash.set');
 const fs = require('fs');
 
 const isForced = process.argv.some(a => a === '--force');
@@ -49,7 +51,10 @@ function copyConfiguration(filename) {
 function alreadyInstalled(scriptName, script, holder) {
   const filename = clientPackageJsonFilename();
   const pkg = JSON.parse(fs.readFileSync(filename));
-  if (!pkg[holder] || !pkg[holder][scriptName] || pkg[holder][scriptName] !== script) {
+  if (!get(pkg, holder)
+      || !get(pkg, holder)[scriptName]
+      || !get(pkg, holder)[scriptName] !== script
+  ) {
     return false;
   }
 
@@ -60,10 +65,7 @@ function addPlugin(scriptName, script, holder) {
   const filename = clientPackageJsonFilename();
   const pkg = JSON.parse(fs.readFileSync(filename));
 
-  // default this to {}
-  if (!pkg[holder]) pkg[holder] = {};
-
-  pkg[holder][scriptName] = script;
+  set(pkg, `${holder}.${scriptName}`, script);
   const text = `${JSON.stringify(pkg, null, 2)}\n`;
   fs.writeFileSync(filename, text, 'utf8');
   console.log(`✅  set ${holder}.${scriptName} to "${script}" in`, filename);
@@ -71,8 +73,8 @@ function addPlugin(scriptName, script, holder) {
 
 [
   ['semantic-release', 'semantic-release', 'scripts'],
-  ['commitmsg', 'commitlint -e $GIT_PARAMS', 'scripts'],
-  ['preparecommitmsg', './node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $GIT_PARAMS', 'scripts'],
+  ['commit-msg', 'commitlint -e $HUSKY_GIT_PARAMS', 'husky.hooks'],
+  ['prepare-commit-msg', './node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $HUSKY_GIT_PARAMS', 'husky.hooks'],
 ].forEach((input) => {
   const [scriptName, name, holder] = input;
   if (!alreadyInstalled(scriptName, name, holder)) {
