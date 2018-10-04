@@ -58,7 +58,7 @@ exports.handler = (argv) => {
     if (argv.no_cleanup !== true) {
       echo(`\nAutomatically cleaning up after ${signal}\n`);
       exec(`${dockerCompose} stop; true`);
-      exec(`${dockerCompose} rm -f -v; true`);
+      exec(`${dockerCompose} down; true`);
       // force exit now
       if (signal === 'exit') process.exit(code || 0);
     } else {
