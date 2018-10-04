@@ -58,13 +58,13 @@ exports.handler = async (argv) => {
     // eslint-disable-next-line no-restricted-syntax
     for (const mod of argv.rebuild) {
       // eslint-disable-next-line no-await-in-loop
-      await execAsync(`docker exec tester npm rebuild ${mod}`);
+      await execAsync(`${compose} exec tester npm rebuild ${mod}`);
     }
   }
 
   if (argv.gyp) {
-    await execAsync('docker exec tester node-gyp configure');
-    await execAsync('docker exec tester node-gyp build');
+    await execAsync(`${compose} exec tester node-gyp configure`);
+    await execAsync(`${compose} exec tester node-gyp build`);
   }
 
   if (argv.sleep) {
@@ -76,10 +76,10 @@ exports.handler = async (argv) => {
   const nyc = `${argv.root}/nyc`;
   const testFramework = `${argv.root}/${argv.test_framework}`;
   const customRun = argv.custom_run ? `${argv.custom_run} ` : '';
-  const runner = 'docker exec tester /bin/sh';
+  const runner = `${compose} exec tester /bin/sh`;
 
   await loopThroughCmds(argv.pre);
-  await loopThroughCmds(argv.arbitrary_exec, cmd => `docker exec tester ${cmd}`);
+  await loopThroughCmds(argv.arbitrary_exec, cmd => `${compose} exec tester ${cmd}`);
   await loopThroughCmds(testFiles, (test) => {
     const basename = path.basename(test, '.js');
     const coverageDir = `${argv.report_dir}/${basename}`;
