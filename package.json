@@ -36,8 +36,7 @@
     "eslint-config-makeomatic": "^3.0.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-promise": "^4.0.1",
-    "jest": "^23.6.0",
-    "nyc": "^13.0.1"
+    "jest": "^23.6.0"
   },
   "dependencies": {
     "@commitlint/cli": "^7.1.2",

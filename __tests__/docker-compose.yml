@@ -2,8 +2,8 @@ version: '3'
 
 services:
   tester:
-    image: makeomatic/node:10.6.0-chrome-tester
-    container_name: tester
+    shm_size: 512m
+    image: makeomatic/node:10.11.0-chrome-tester
     hostname: tester
     working_dir: /src
     volumes:
