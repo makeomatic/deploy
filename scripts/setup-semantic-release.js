@@ -32,16 +32,21 @@ function clientPackageJsonFilename() {
   return path.join(process.cwd(), '..', '..', '..', 'package.json');
 }
 
-function copyConfiguration(filename) {
-  const rcpath = path.join(process.cwd(), '..', '..', '..', filename);
+function copyConfiguration(filename, _fallback) {
+  const fallback = Array.isArray(_fallback) ? [filename].concat(_fallback) : [filename];
+  const prefix = path.join(process.cwd(), '..', '..', '..');
+  const rcpath = path.join(prefix, filename);
   let stat;
 
-  try {
-    stat = fs.statSync(rcpath);
-    // do not overwrite
-    if (stat.isFile() === true) return;
-  } catch (e) {
-    // no file - write a new one down
+  // eslint-disable-next-line guard-for-in, no-restricted-syntax
+  for (const idx in fallback) {
+    try {
+      stat = fs.statSync(path.join(prefix, fallback[idx]));
+      // do not overwrite
+      if (stat.isFile() === true) return;
+    } catch (e) {
+      // no file - write a new one down
+    }
   }
 
   // copy over
@@ -83,7 +88,7 @@ function addPlugin(scriptName, script, holder) {
   }
 });
 
-copyConfiguration('.releaserc.json');
+copyConfiguration('.releaserc.json', ['.releaserc.js']);
 copyConfiguration('.commitlintrc.js');
 
 console.log('⚠️ Use "semantic-release-cli setup" to complete setting up semantic-release');
