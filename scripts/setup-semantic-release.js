@@ -56,10 +56,7 @@ function copyConfiguration(filename, _fallback) {
 function alreadyInstalled(scriptName, script, holder) {
   const filename = clientPackageJsonFilename();
   const pkg = JSON.parse(fs.readFileSync(filename));
-  if (!get(pkg, holder)
-      || !get(pkg, holder)[scriptName]
-      || !get(pkg, holder)[scriptName] !== script
-  ) {
+  if (!get(pkg, holder) || !get(pkg, holder)[scriptName]) {
     return false;
   }
 
