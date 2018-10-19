@@ -88,7 +88,7 @@ function redisSentinel(compose, argv) {
   redis(compose, argv);
 
   const entrypoint = path.resolve(__dirname, '../../../templates/redis-sentinel.sh');
-  compose.services.redisSentinel = merge({
+  compose.services['redis-sentinel'] = merge({
     image: 'redis:4.0.11-alpine',
     hostname: 'redis-sentinel',
     expose: ['26379'],
