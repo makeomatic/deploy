@@ -13,6 +13,27 @@ exports.builder = yargs => (
       default: './test/docker-compose.yml',
       normalize: true,
     })
+    .option('auto_compose', {
+      type: 'boolean',
+      default: false,
+    })
+    .option('tester_flavour', {
+      type: 'string',
+      default: 'tester',
+    })
+    .option('extras', {
+      description: 'any extras for tester docker container, will be merged',
+      type: 'string',
+      default: {},
+      coerce(argv) {
+        return typeof argv === 'string' ? JSON.parse(argv) : argv;
+      },
+    })
+    .option('services', {
+      type: 'array',
+      description: 'enable listed services',
+      choices: Object.keys(require('./test_cmds/auto_compose').SERVICE_MAP),
+    })
     .option('docker_compose_version', {
       alias: 'dcv',
       describe: 'docker-compose version to use',

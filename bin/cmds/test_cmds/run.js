@@ -46,7 +46,7 @@ exports.handler = async (argv) => {
   const { compose } = argv;
 
   // start containers
-  echo('bringing up containers');
+  echo(`bringing up containers via ${compose}`);
   if (exec(`${compose} up -d`).code !== 0) {
     echo('failed to start docker containers. Exit 128');
     exit(128);

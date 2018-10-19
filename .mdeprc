@@ -2,5 +2,21 @@
   "nycCoverage": false,
   "test_framework": "jest --coverage --coverageDirectory <coverageDirectory> --detectOpenHandles",
   "tests": "__tests__/*.js",
-  "docker_compose": "__tests__/docker-compose.yml"
+  "auto_compose": true,
+  "node": "10.12.0",
+  "tester_flavour": "chrome-tester",
+  "services": [
+    "redisSentinel",
+    "redisCluster",
+    "rabbitmq",
+    "postgres"
+  ],
+  "extras": {
+    "tester": {
+      "shm_size": "128m",
+      "environment": {
+        "CHROME_PATH": "/usr/bin/chromium-browser"
+      }
+    }
+  }
 }

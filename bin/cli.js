@@ -1,24 +1,22 @@
 #!/usr/bin/env node
 
+/* eslint-disable import/no-dynamic-require, no-nested-ternary */
 const path = require('path');
 const fs = require('fs');
 const findUp = require('find-up');
+const readPkg = require('read-pkg');
+const assert = require('assert');
 
-let parentProject;
-try {
-  // eslint-disable-next-line import/no-dynamic-require
-  parentProject = require(`${process.cwd()}/package.json`);
-  if (!parentProject.version) {
-    throw new Error('package.json missing version');
-  }
-} catch (e) {
-  throw new Error(`Must contain package.json in the current dir: ${e.message}`);
-}
+const parentProject = readPkg.sync();
+assert(parentProject && parentProject.version, 'Must contain package.json in the current dir');
 
 // get configPath if it's there
 const configPath = findUp.sync(['.mdeprc', '.mdeprc.js', '.mdeprc.json']);
-// eslint-disable-next-line import/no-dynamic-require
-const config = configPath ? JSON.parse(fs.readFileSync(configPath)) : {};
+const config = configPath
+  ? configPath.endsWith('.js')
+    ? require(configPath)
+    : JSON.parse(fs.readFileSync(configPath))
+  : {};
 
 require('yargs')
   .version(false)
@@ -27,7 +25,7 @@ require('yargs')
   .option('node', {
     alias: 'n',
     describe: 'node version to use when building',
-    default: '9.3.0',
+    default: '10.12.0',
   })
   .option('env', {
     alias: 'E',

@@ -44,6 +44,13 @@ exports.handler = (argv) => {
     chmod('+x', compose);
   }
 
+  /**
+   * Generates dynamic docker-compose file based on the presets
+   */
+  if (argv.auto_compose) {
+    require('./auto_compose').handler(argv);
+  }
+
   // add link to compose file
   argv.compose = ShellString(`${compose} -f ${argv.docker_compose}`);
 
@@ -57,12 +64,17 @@ exports.handler = (argv) => {
 
     if (argv.no_cleanup !== true) {
       echo(`\nAutomatically cleaning up after ${signal}\n`);
-      exec(`${dockerCompose} stop; true`);
       exec(`${dockerCompose} down; true`);
+
+      if (argv.auto_compose) {
+        echo(`rm ${argv.docker_compose}`);
+        exec(`rm ${argv.docker_compose}`);
+      }
+
       // force exit now
       if (signal === 'exit') process.exit(code || 0);
     } else {
-      echo(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} stop;\n${dockerCompose} rm -f -v;\n`);
+      echo(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} down;\n`);
     }
   }
 

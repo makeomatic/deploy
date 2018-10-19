@@ -84,27 +84,38 @@ Options:
 ## Test
 
 ```bash
-bin/cli.js test <command>
+cli.js test <command>
+
+performs tests in docker
 
 Commands:
-  compose  installs compose on the system
-  init     adds basic files for testing
-  run      performs testing
+  cli.js test compose  prepares docker-compose file based on config
+  cli.js test compose  installs compose on the system
+  cli.js test init     adds basic files for testing
+  cli.js test run      performs testing
 
 Options:
   --node, -n                       node version to use when building
-                                                              [default: "7.8.0"]
+                                                              [default: "9.3.0"]
   --env, -E                        node environment to build for
                                                          [default: "production"]
   --project, -p                    project name where this is used
-                                                  [default: "makeomatic-deploy"]
+                                                             [default: "deploy"]
+  --repository, --repo             docker repository to use
+                                                         [default: "makeomatic"]
   --version, -v                    version of the project to build
-                                                              [default: "1.5.0"]
+                                                  [default: "0.0.0-development"]
   --pkg                            package json path
-              [default: "/Users/vitaly/projects/makeomatic-deploy/package.json"]
-  --help                           Show help                           [boolean]
+             [default: "/Users/vitaly/projects/@makeomatic/deploy/package.json"]
   --docker_compose                 docker-compose file for testing
                                  [string] [default: "./test/docker-compose.yml"]
+  --auto_compose                                      [boolean] [default: false]
+  --tester_flavour                                  [string] [default: "tester"]
+  --extras                         any extras for tester docker container, will
+                                   be merged              [string] [default: {}]
+  --services                       enable listed services
+         [array] [choices: "redis", "redisCluster", "redisSentinel", "postgres",
+                                                                     "rabbitmq"]
   --docker_compose_version, --dcv  docker-compose version to use
                                                              [default: "1.11.2"]
   --docker_compose_force, --dcf    forces to install local copy of
@@ -131,4 +142,8 @@ Options:
                                                       [boolean] [default: false]
   --arbitrary_exec                 arbitrary commands to exec in docker tester
                                                            [array] [default: []]
+  --pre                            pre commands to run     [array] [default: []]
+  --nycCoverage                    set to --no-nycCoverage to disable it
+                                                       [boolean] [default: true]
+  --help                           Show help                           [boolean]
 ```

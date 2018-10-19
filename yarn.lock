@@ -3286,6 +3286,14 @@ husky@^1.1.2:
     run-node "^1.0.0"
     slash "^2.0.0"
 
+hyperid@^1.4.1:
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/hyperid/-/hyperid-1.4.1.tgz#5df41b25a86171661b37534c3404655ae7657d29"
+  integrity sha512-rtuRoJyEPZZEGN25T1PC2/IYxdApJEYbBB+8e7vZMFnfhZV7HobkpUr7z1gZvcxqleg4OVg0YrMEtfmIoV85gQ==
+  dependencies:
+    uuid "^3.2.1"
+    uuid-parse "^1.0.0"
+
 iconv-lite@0.4.24, iconv-lite@^0.4.24, iconv-lite@^0.4.4, iconv-lite@~0.4.13:
   version "0.4.24"
   resolved "https://registry.yarnpkg.com/iconv-lite/-/iconv-lite-0.4.24.tgz#2022b4b25fbddc21d2f524974a474aafe733908b"
@@ -7666,7 +7674,12 @@ util.promisify@^1.0.0:
     define-properties "^1.1.2"
     object.getownpropertydescriptors "^2.0.3"
 
-uuid@^3.3.2:
+uuid-parse@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/uuid-parse/-/uuid-parse-1.0.0.tgz#f4657717624b0e4b88af36f98d89589a5bbee569"
+  integrity sha1-9GV3F2JLDkuIrzb5jYlYmlu+5Wk=
+
+uuid@^3.2.1, uuid@^3.3.2:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.3.2.tgz#1b4af4955eb3077c501c23872fc6513811587131"
   integrity sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==
