@@ -52,9 +52,7 @@ require('yargs')
   .option('pkg', {
     describe: 'package json path',
     default: `${process.cwd()}/package.json`,
-  })
-  .coerce({
-    pkg: arg => JSON.parse(fs.readFileSync(path.resolve(arg))),
+    coerce: arg => JSON.parse(fs.readFileSync(path.resolve(arg))),
   })
   .config(config)
   .help()

@@ -13,6 +13,11 @@ exports.builder = yargs => (
       default: './test/docker-compose.yml',
       normalize: true,
     })
+    .option('parallel', {
+      type: 'number',
+      description: 'run test suites in parallel',
+      default: 1,
+    })
     .option('auto_compose', {
       type: 'boolean',
       default: false,

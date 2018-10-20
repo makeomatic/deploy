@@ -14,19 +14,20 @@ async function execAsync(cmd) {
   ));
 }
 
-async function loopThroughCmds(arr, makeCmd = it => it) {
-  // eslint-disable-next-line no-restricted-syntax
-  for (const preCommand of arr) {
-    const cmd = makeCmd(preCommand);
-    echo(cmd);
+async function echoAndExec(cmd) {
+  echo(cmd);
+  return execAsync(cmd);
+}
 
-    // eslint-disable-next-line no-await-in-loop
-    const run = await execAsync(cmd);
-    if (!run || run.code !== 0) {
-      echo(`failed to run ${cmd}, exiting 128...`);
+async function loopThroughCmds(arr, makeCmd = it => it, concurrency = 1) {
+  await Promise.map(arr, async (instructions) => {
+    const command = makeCmd(instructions);
+    const results = await echoAndExec(command);
+    if (!results || results.code !== 0) {
+      echo(`failed to run ${command}, exiting 128...`);
       exit(128);
     }
-  }
+  }, { concurrency });
 }
 
 exports.command = 'run';
@@ -46,13 +47,12 @@ exports.handler = async (argv) => {
   const { compose } = argv;
 
   // start containers
-  echo(`bringing up containers via ${compose}`);
-  if (exec(`${compose} up -d`).code !== 0) {
+  if ((await echoAndExec(`${compose} up -d`)).code !== 0) {
     echo('failed to start docker containers. Exit 128');
     exit(128);
   }
 
-  const containerData = exec(`${compose} ps -q tester`);
+  const containerData = await echoAndExec(`${compose} ps -q tester`);
   if (containerData.code !== 0) {
     echo('failed to get container id. Exit 128');
     exit(128);
@@ -75,7 +75,7 @@ exports.handler = async (argv) => {
   }
 
   if (argv.sleep) {
-    exec(`sleep ${argv.sleep}`);
+    await echoAndExec(`sleep ${argv.sleep}`);
   }
 
   // now determine what we need
@@ -97,12 +97,11 @@ exports.handler = async (argv) => {
       .replace('<coverageDirectory>', coverageDir);
 
     return `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${cov} ${testBin} ${test}"`;
-  });
+  }, argv.parallel);
 
   // upload codecoverage report
   if (argv.coverage) {
-    echo('uploading coverage');
     // this is to avoid exposing token
-    exec('./node_modules/.bin/codecov > /dev/null &2>1');
+    await echoAndExec('./node_modules/.bin/codecov > /dev/null &2>1');
   }
 };

@@ -9,7 +9,9 @@
     "redisSentinel",
     "redisCluster",
     "rabbitmq",
-    "postgres"
+    "postgres",
+    "elasticsearch",
+    "cassandra"
   ],
   "extras": {
     "tester": {

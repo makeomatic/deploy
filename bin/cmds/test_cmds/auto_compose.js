@@ -5,6 +5,7 @@ const fs = require('fs');
 const hyperid = require('hyperid');
 const merge = require('lodash.merge');
 const path = require('path');
+const { mkdir } = require('shelljs');
 
 const SERVICE_MAP = {
   redis,
@@ -12,6 +13,8 @@ const SERVICE_MAP = {
   redisSentinel,
   postgres,
   rabbitmq,
+  elasticsearch,
+  cassandra,
 };
 
 exports.SERVICE_MAP = SERVICE_MAP;
@@ -44,9 +47,10 @@ exports.handler = (argv) => {
   // finalize and push out to tmp
   const dir = os.tmpdir();
   const filename = `docker-compose.${getId()}.yml`;
-  const location = `${dir}/${filename}`;
+  const location = `${dir}/${argv.project}/${filename}`;
 
-  // write out the file
+  // write out the file, ensure dir exists
+  mkdir(`${dir}/${argv.project}`);
   fs.writeFileSync(location, jsYaml.safeDump(compose));
 
   // rewrite location of docker-compose
@@ -110,4 +114,39 @@ function rabbitmq(compose, argv) {
     image: 'rabbitmq:3.7.8-management-alpine',
     hostname: 'rabbitmq',
   }, argv.extras.rabbitmq);
+}
+
+function elasticsearch(compose, argv) {
+  compose.services.elasticsearch = merge({
+    image: 'docker.elastic.co/elasticsearch/elasticsearch:6.4.1',
+    hostname: 'elasticsearch',
+    environment: {
+      ES_JAVA_OPTS: '-Xms128m -Xmx128m',
+      'http.host': '0.0.0.0',
+      'transport.host': '127.0.0.1',
+      'xpack.security.enabled': 'false',
+    },
+    ulimits: {
+      memlock: {
+        soft: -1,
+        hard: -1,
+      },
+      nofile: {
+        soft: 65536,
+        hard: 65536,
+      },
+    },
+    cap_add: ['IPC_LOCK'],
+  }, argv.extras.elasticsearch);
+}
+
+function cassandra(composer, argv) {
+  composer.services.cassandra = merge({
+    image: 'cassandra:3.11',
+    hostname: 'cassandra',
+    environment: {
+      MAX_HEAP_SIZE: '128m',
+      HEAP_NEWSIZE: '24m',
+    },
+  }, argv.extras.cassandra);
 }
