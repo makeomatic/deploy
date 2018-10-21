@@ -125,7 +125,7 @@ function elasticsearch(compose, argv) {
       '9300',
     ],
     environment: {
-      ES_JAVA_OPTS: '"-Xms128m -Xmx128m"',
+      ES_JAVA_OPTS: '-Xms128m -Xmx128m',
       'discovery.type': 'single-node',
       'http.host': '0.0.0.0',
       'transport.host': '127.0.0.1',
