@@ -102,6 +102,6 @@ exports.handler = async (argv) => {
   // upload codecoverage report
   if (argv.coverage) {
     // this is to avoid exposing token
-    await echoAndExec('./node_modules/.bin/codecov > /dev/null &2>1');
+    await echoAndExec(`${argv.coverage} > /dev/null 2>1`);
   }
 };

@@ -78,8 +78,9 @@ exports.builder = yargs => (
     })
     .option('coverage', {
       describe: 'whether to upload coverage or not',
-      boolean: true,
-      default: !!process.env.CI,
+      default: process.env.CI === 'true'
+        ? './node_modules/.bin/codecov'
+        : false,
     })
     .option('root', {
       describe: 'binary root path on the tester',
