@@ -19,7 +19,7 @@ describe('chrome helpers', () => {
     Page.navigate({ url: 'https://facebook.com' });
     await Page.loadEventFired();
     await Promise.bind(context).then(Chrome.captureScreenshot);
-  });
+  }, 10000);
 
   afterAll(async () => (
     chrome ? chrome.close() : null
