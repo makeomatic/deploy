@@ -74,7 +74,7 @@ function tester(compose, argv) {
 }
 
 function redisCluster(compose, argv) {
-  compose.services.redisCluster = merge({
+  compose.services['redis-cluster'] = merge({
     image: 'makeomatic/redis-cluster:3.2.9',
     hostname: 'redis-cluster',
   }, argv.extras.redisCluster);
@@ -120,8 +120,13 @@ function elasticsearch(compose, argv) {
   compose.services.elasticsearch = merge({
     image: 'docker.elastic.co/elasticsearch/elasticsearch:6.4.1',
     hostname: 'elasticsearch',
+    expose: [
+      '9200',
+      '9300',
+    ],
     environment: {
-      ES_JAVA_OPTS: '-Xms128m -Xmx128m',
+      ES_JAVA_OPTS: '"-Xms128m -Xmx128m"',
+      'discovery.type': 'single-node',
       'http.host': '0.0.0.0',
       'transport.host': '127.0.0.1',
       'xpack.security.enabled': 'false',
