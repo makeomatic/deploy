@@ -10,6 +10,8 @@ const {
   exec, echo, which, exit, mkdir, chmod, ShellString,
 } = require('shelljs');
 
+const withComposeFile = filepath => `-f ${filepath}`;
+
 exports.command = 'compose';
 exports.desc = 'installs compose on the system';
 exports.handler = (argv) => {
@@ -44,15 +46,23 @@ exports.handler = (argv) => {
     chmod('+x', compose);
   }
 
+  let dockerComposeFiles = withComposeFile(argv.docker_compose);
   /**
    * Generates dynamic docker-compose file based on the presets
    */
   if (argv.auto_compose) {
     require('./auto_compose').handler(argv);
+
+    const autoComposeFile = withComposeFile(argv.docker_compose);
+    if (argv.with_local_compose) {
+      dockerComposeFiles += ` ${autoComposeFile}`;
+    } else {
+      dockerComposeFiles = autoComposeFile;
+    }
   }
 
   // add link to compose file
-  argv.compose = ShellString(`${compose} -f ${argv.docker_compose}`);
+  argv.compose = ShellString(`${compose} ${dockerComposeFiles}`);
 
   function stopDocker(signal, code) {
     const dockerCompose = argv.compose;
