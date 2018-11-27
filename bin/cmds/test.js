@@ -22,6 +22,11 @@ exports.builder = yargs => (
       type: 'boolean',
       default: false,
     })
+    .option('with_local_compose', {
+      type: 'boolean',
+      default: false,
+      description: 'also include services defined in the docker_compose file. Senseless w/o auto_compose=true',
+    })
     .option('tester_flavour', {
       type: 'string',
       default: 'tester',
