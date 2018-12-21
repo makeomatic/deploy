@@ -17,6 +17,8 @@ const SERVICE_MAP = {
   cassandra,
 };
 
+const isWin = process.platform === "win32";
+
 exports.SERVICE_MAP = SERVICE_MAP;
 exports.command = 'compose';
 exports.desc = 'prepares docker-compose file based on config';
@@ -47,7 +49,8 @@ exports.handler = (argv) => {
   // finalize and push out to tmp
   const dir = os.tmpdir();
   const filename = `docker-compose.${getId()}.yml`;
-  const location = `${dir}/${argv.project}/${filename}`;
+  const location = isWin ? `${dir}\\${argv.project}\\${filename}` :
+    `${dir}/${argv.project}/${filename}`;
 
   // write out the file, ensure dir exists
   mkdir(`${dir}/${argv.project}`);
@@ -154,4 +157,4 @@ function cassandra(composer, argv) {
       HEAP_NEWSIZE: '24m',
     },
   }, argv.extras.cassandra);
-}
+} 
