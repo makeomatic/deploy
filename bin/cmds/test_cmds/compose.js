@@ -92,4 +92,4 @@ exports.handler = (argv) => {
 
   // put docker-compose up
   onDeath(stopDocker);
-}; 
+}

@@ -154,4 +154,4 @@ function cassandra(composer, argv) {
       HEAP_NEWSIZE: '24m',
     },
   }, argv.extras.cassandra);
-} 
+}
