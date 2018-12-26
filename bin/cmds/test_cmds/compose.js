@@ -10,6 +10,7 @@ const {
   exec, echo, which, exit, mkdir, chmod, ShellString,
 } = require('shelljs');
 
+const isWin = process.platform === "win32";
 const withComposeFile = filepath => `-f ${filepath}`;
 
 exports.command = 'compose';
@@ -19,7 +20,7 @@ exports.handler = (argv) => {
 
   // verify if we have compose or not
   let compose = which('docker-compose');
-  const version = compose && exec(`${compose} --version`).stdout.match(/\d+\.\d+\.\d+/)[0];
+  const version = compose && exec(`"${compose}" --version`).stdout.match(/\d+\.\d+\.\d+/)[0];
 
   // compose not found - install
   if (compose === null || (argv.dcf && version !== argv.dcv)) {
@@ -62,7 +63,7 @@ exports.handler = (argv) => {
   }
 
   // add link to compose file
-  argv.compose = ShellString(`${compose} ${dockerComposeFiles}`);
+  argv.compose = ShellString(`"${compose}" ${dockerComposeFiles}`);
 
   function stopDocker(signal, code) {
     const dockerCompose = argv.compose;
@@ -77,8 +78,9 @@ exports.handler = (argv) => {
       exec(`${dockerCompose} down; true`);
 
       if (argv.auto_compose) {
-        echo(`rm ${argv.docker_compose}`);
-        exec(`rm ${argv.docker_compose}`);
+        const deleteCmd = (isWin ? 'del ' : 'rm ') + argv.docker_compose;
+        echo(deleteCmd);
+        exec(deleteCmd);
       }
 
       // force exit now
@@ -90,4 +92,4 @@ exports.handler = (argv) => {
 
   // put docker-compose up
   onDeath(stopDocker);
-};
+}

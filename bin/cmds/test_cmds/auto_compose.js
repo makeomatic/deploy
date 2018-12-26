@@ -47,7 +47,7 @@ exports.handler = (argv) => {
   // finalize and push out to tmp
   const dir = os.tmpdir();
   const filename = `docker-compose.${getId()}.yml`;
-  const location = `${dir}/${argv.project}/${filename}`;
+  const location = [dir, argv.project, filename].join(path.sep);
 
   // write out the file, ensure dir exists
   mkdir(`${dir}/${argv.project}`);
