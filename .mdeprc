@@ -1,9 +1,9 @@
 {
   "nycCoverage": false,
-  "test_framework": "jest --coverage --coverageDirectory <coverageDirectory> --detectOpenHandles",
+  "test_framework": "jest --coverage --coverageDirectory <coverageDirectory> --detectOpenHandles --runTestsByPath",
   "tests": "__tests__/*.js",
   "auto_compose": true,
-  "node": "10.12.0",
+  "node": "10.15.1",
   "tester_flavour": "chrome-tester",
   "services": [
     "redisSentinel",
