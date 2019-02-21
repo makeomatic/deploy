@@ -30,6 +30,18 @@ async function loopThroughCmds(arr, makeCmd = it => it, concurrency = 1) {
   }, { concurrency });
 }
 
+function removeCommonPrefix(from, compareWith) {
+  let i = 0;
+  const normalizedFrom = path.normalize(from);
+  const normalizedCompare = path.normalize(compareWith);
+
+  while(normalizedFrom.charAt(i) === normalizedCompare.charAt(i)) {
+    i++;
+  }
+
+  return normalizedFrom.substring(i);
+}
+
 exports.command = 'run';
 exports.desc = 'performs testing';
 exports.handler = async (argv) => {
@@ -88,8 +100,8 @@ exports.handler = async (argv) => {
   await loopThroughCmds(argv.pre);
   await loopThroughCmds(argv.arbitrary_exec, cmd => `docker exec ${container} ${cmd}`);
   await loopThroughCmds(testFiles, (test) => {
-    const basename = path.basename(test, '.js');
-    const coverageDir = `${argv.report_dir}/${basename}`;
+    const testName = removeCommonPrefix(test, argv.tests);
+    const coverageDir = `${argv.report_dir}/` + testName.substring(0, testName.lastIndexOf('.'));
     const cov = argv.nycCoverage ? `${nyc} --report-dir ${coverageDir}` : '';
 
     // somewhat of a hack for jest test coverage
