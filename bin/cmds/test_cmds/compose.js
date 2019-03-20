@@ -10,7 +10,7 @@ const {
   exec, echo, which, exit, mkdir, chmod, ShellString,
 } = require('shelljs');
 
-const isWin = process.platform === "win32";
+const isWin = process.platform === 'win32';
 const withComposeFile = filepath => `-f ${filepath}`;
 
 exports.command = 'compose';
@@ -92,4 +92,4 @@ exports.handler = (argv) => {
 
   // put docker-compose up
   onDeath(stopDocker);
-}
+};

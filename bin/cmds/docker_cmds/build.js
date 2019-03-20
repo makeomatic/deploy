@@ -3,7 +3,13 @@
  */
 
 const fs = require('fs');
-const { exec, echo, exit, ShellString, rm } = require('shelljs');
+const {
+  exec,
+  echo,
+  exit,
+  ShellString,
+  rm,
+} = require('shelljs');
 
 exports.command = 'build';
 exports.desc = 'builds docker image for a project';
