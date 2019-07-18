@@ -49,7 +49,7 @@ exports.handler = async (argv) => {
   require('./compose').handler(argv);
 
   // now that we have compose get tests
-  const testFiles = glob.sync(argv.tests);
+  const testFiles = glob.sync(argv.tests).sort();
   if (testFiles.length === 0) {
     echo('No test files found. Exit 1');
     exit(1);
