@@ -16,7 +16,7 @@ const _SIGINT_EXIT_CODE = 130;
  * @return {Promise<{ chrome: ChromeLauncher, protocol: ChromeDebugProtocol, close: Function }>}
  */
 function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
-  const settings = Object.assign({
+  const settings = {
     rimraf,
     logLevel: 'silent',
     chromeFlags: [
@@ -26,7 +26,8 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
       '--headless',
     ],
     handleSIGINT: true,
-  }, opts);
+    ...opts,
+  };
 
   // use actual log level
   pino.level = settings.logLevel;
@@ -54,7 +55,7 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
     };
   };
 
-  const initProtocol = launcher => Promise.props({
+  const initProtocol = (launcher) => Promise.props({
     launcher,
     protocol: chrome({ port: launcher.port }),
   });
@@ -189,7 +190,7 @@ module.exports.captureScreenshot = function captureScreenshot(any) {
     .then(() => Page.captureScreenshot({ format: 'jpeg', quality: 70 }))
     .then((screenshot) => {
       const filepath = `/src/ss/${Date.now()}.jpeg`;
-      return Promise.fromCallback(next => fs.writeFile(filepath, Buffer.from(screenshot.data, 'base64'), next));
+      return Promise.fromCallback((next) => fs.writeFile(filepath, Buffer.from(screenshot.data, 'base64'), next));
     })
     .tap(() => {
       if (any instanceof Error) throw any;
@@ -307,7 +308,7 @@ module.exports.type = function type(selector, text, timeout = 30000) {
   return Promise
     .bind(this, [selector, timeout])
     .spread(module.exports.wait)
-    .tap(nodeSelector => module.exports.retry(timeout, 'setNodeValue', () => (
+    .tap((nodeSelector) => module.exports.retry(timeout, 'setNodeValue', () => (
       Promise
         .bind(this)
         .then(() => Runtime.evaluate({
@@ -368,9 +369,13 @@ module.exports.submit = function submit(selector, timeout = 30000) {
             pino.debug('Completed evaluate', result.value);
             return result.value;
           })
-          .tap(coordinates => Input.dispatchMouseEvent(Object.assign({ type: 'mouseMoved' }, coordinates)))
-          .tap(coordinates => Input.dispatchMouseEvent(Object.assign({ type: 'mousePressed', button: 'left', clickCount: 1 }, coordinates)))
-          .tap(coordinates => Input.dispatchMouseEvent(Object.assign({ type: 'mouseReleased', button: 'left', clickCount: 1 }, coordinates)))
+          .tap((coordinates) => Input.dispatchMouseEvent({ type: 'mouseMoved', ...coordinates }))
+          .tap((coordinates) => Input.dispatchMouseEvent({
+            type: 'mousePressed', button: 'left', clickCount: 1, ...coordinates,
+          }))
+          .tap((coordinates) => Input.dispatchMouseEvent({
+            type: 'mouseReleased', button: 'left', clickCount: 1, ...coordinates,
+          }))
       ));
     });
 };
@@ -406,7 +411,7 @@ module.exports.captureResponse = function captureResponse(url, timeout = 30000) 
       pino.debug('response:', params);
       if (url.test(params.response.url)) {
         const { response, requestId } = params;
-        next(null, Object.assign({}, response, { requestId }));
+        next(null, { ...response, requestId });
       }
     });
 
@@ -427,9 +432,9 @@ module.exports.captureResponseBody = function captureResponseBody(url, code = 20
   return Promise
     .bind(this, [url, timeout])
     .spread(module.exports.captureResponse)
-    .then(response => Promise.props({
+    .then((response) => Promise.props({
       // if we fail to fetch it -> just print error
-      body: Network.getResponseBody({ requestId: response.requestId }).get('body').catch(err => err.message),
+      body: Network.getResponseBody({ requestId: response.requestId }).get('body').catch((err) => err.message),
       // capture status code
       status: response.status,
     }))
@@ -460,10 +465,12 @@ module.exports.exec = function exec(expression, opts = {}) {
   const { Runtime } = this.protocol;
 
   return Runtime
-    .evaluate(Object.assign({
+    .evaluate({
       returnByValue: true,
       includeCommandLineAPI: true,
-    }, opts, { expression }))
+      ...opts,
+      expression,
+    })
     .then(({ result, exceptionDetails }) => {
       if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
       return result.value;

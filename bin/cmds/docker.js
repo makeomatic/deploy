@@ -8,7 +8,7 @@ const assert = require('assert');
 exports.called = false;
 exports.command = 'docker';
 exports.desc = 'manages docker lifecycle';
-exports.builder = yargs => (
+exports.builder = (yargs) => (
   yargs.commandDir('docker_cmds')
     .option('include_node', {
       alias: 'in',

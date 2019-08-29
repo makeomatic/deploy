@@ -12,7 +12,7 @@ exports.handler = (argv) => {
 
   const { mainTag, tags } = argv;
 
-  [mainTag, ...tags].forEach(tag => (
+  [mainTag, ...tags].forEach((tag) => (
     assert.equal(exec(`docker push ${tag}`).code, 0, 'failed to push')
   ));
 };

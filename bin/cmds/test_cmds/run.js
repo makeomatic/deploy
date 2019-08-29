@@ -9,7 +9,7 @@ const { exec, echo, exit } = require('shelljs');
 
 // to lower CPU usage
 async function execAsync(cmd) {
-  return Promise.fromCallback(next => (
+  return Promise.fromCallback((next) => (
     exec(cmd, (code, stdout, stderr) => next(null, { code, stdout, stderr }))
   ));
 }
@@ -19,7 +19,7 @@ async function echoAndExec(cmd) {
   return execAsync(cmd);
 }
 
-async function loopThroughCmds(arr, makeCmd = it => it, concurrency = 1) {
+async function loopThroughCmds(arr, makeCmd = (it) => it, concurrency = 1) {
   await Promise.map(arr, async (instructions) => {
     const command = makeCmd(instructions);
     const results = await echoAndExec(command);
@@ -99,7 +99,7 @@ exports.handler = async (argv) => {
   const runner = `docker exec ${container} /bin/sh`;
 
   await loopThroughCmds(argv.pre);
-  await loopThroughCmds(argv.arbitrary_exec, cmd => `docker exec ${container} ${cmd}`);
+  await loopThroughCmds(argv.arbitrary_exec, (cmd) => `docker exec ${container} ${cmd}`);
   await loopThroughCmds(testFiles, (test) => {
     const testName = removeCommonPrefix(test, argv.tests);
     const coverageDir = `${argv.report_dir}/${testName.substring(0, testName.lastIndexOf('.'))}`;

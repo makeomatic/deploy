@@ -5,7 +5,7 @@
 
 exports.command = 'test <command>';
 exports.desc = 'performs tests in docker';
-exports.builder = yargs => (
+exports.builder = (yargs) => (
   yargs
     .commandDir('test_cmds')
     .option('docker_compose', {

@@ -11,7 +11,7 @@ exports.handler = (argv) => {
 
   const { mainTag, tags } = argv;
 
-  tags.forEach(tag => (
+  tags.forEach((tag) => (
     assert.equal(exec(`docker tag ${mainTag} ${tag}`).code, 0, 'failed to tag')
   ));
 };
