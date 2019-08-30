@@ -3,7 +3,7 @@
   "test_framework": "jest --coverage --coverageDirectory <coverageDirectory> --detectOpenHandles --runTestsByPath",
   "tests": "__tests__/*.js",
   "auto_compose": true,
-  "node": "10.15.3",
+  "node": "10.16.3",
   "tester_flavour": "chrome-tester",
   "services": [
     "redisSentinel",

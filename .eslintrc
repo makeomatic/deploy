@@ -1,6 +1,5 @@
 {
   "extends": "makeomatic",
-  "parser": "babel-eslint",
   "rules": {
     "no-unused-expressions": 0
   }

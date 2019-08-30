@@ -82,7 +82,7 @@ function redisCluster(compose, argv) {
 
 function redis(compose, argv) {
   compose.services.redis = merge({
-    image: 'redis:4.0.11-alpine',
+    image: 'redis:5-alpine',
     hostname: 'redis',
     expose: ['6379'],
   }, argv.extras.redis);
@@ -93,7 +93,7 @@ function redisSentinel(compose, argv) {
 
   const entrypoint = path.resolve(__dirname, '../../../templates/redis-sentinel.sh');
   compose.services['redis-sentinel'] = merge({
-    image: 'redis:4.0.11-alpine',
+    image: 'redis:5-alpine',
     hostname: 'redis-sentinel',
     expose: ['26379'],
     depends_on: ['redis'],
