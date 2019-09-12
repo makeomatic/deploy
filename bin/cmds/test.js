@@ -124,6 +124,11 @@ exports.builder = (yargs) => (
       boolean: true,
       default: true,
     })
+    .option('test_args', {
+      describe: 'extra arguments for test framework',
+      string: true,
+      default: '',
+    })
     .help()
 );
 exports.handler = () => {};

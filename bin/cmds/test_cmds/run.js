@@ -20,14 +20,20 @@ async function echoAndExec(cmd) {
 }
 
 async function loopThroughCmds(arr, makeCmd = (it) => it, concurrency = 1) {
-  await Promise.map(arr, async (instructions) => {
+  const instructionProcessFn = async (instructions) => {
     const command = makeCmd(instructions);
     const results = await echoAndExec(command);
     if (!results || results.code !== 0) {
       echo(`failed to run ${command}, exiting 128...`);
       exit(128);
     }
-  }, { concurrency });
+  };
+
+  if (concurrency > 1) {
+    await Promise.map(arr, instructionProcessFn , { concurrency });
+  } else {
+    await Promise.mapSeries(arr, instructionProcessFn);
+  }
 }
 
 function removeCommonPrefix(from, compareWith) {
@@ -98,6 +104,15 @@ exports.handler = async (argv) => {
   const customRun = argv.custom_run ? `${argv.custom_run} ` : '';
   const runner = `docker exec ${container} /bin/sh`;
 
+  // support argv.test_args and passed '--' args
+  const [,, ...passedArgs ] = argv._;
+  const testArgs = [...passedArgs];
+
+  // default set to ''
+  if (argv.test_args !== '') {
+    testArgs.push(argv.test_args);
+  }
+
   await loopThroughCmds(argv.pre);
   await loopThroughCmds(argv.arbitrary_exec, (cmd) => `docker exec ${container} ${cmd}`);
   await loopThroughCmds(testFiles, (test) => {
@@ -109,7 +124,7 @@ exports.handler = async (argv) => {
     const testBin = testFramework
       .replace('<coverageDirectory>', coverageDir);
 
-    return `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${cov} ${testBin} ${test}"`;
+    return `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${cov} ${testBin} ${testArgs.join(' ')} ${test}"`;
   }, argv.parallel);
 
   // upload codecoverage report
