@@ -30,7 +30,7 @@ async function loopThroughCmds(arr, makeCmd = (it) => it, concurrency = 1) {
   };
 
   if (concurrency > 1) {
-    await Promise.map(arr, instructionProcessFn , { concurrency });
+    await Promise.map(arr, instructionProcessFn, { concurrency });
   } else {
     await Promise.mapSeries(arr, instructionProcessFn);
   }
@@ -105,7 +105,7 @@ exports.handler = async (argv) => {
   const runner = `docker exec ${container} /bin/sh`;
 
   // support argv.test_args and passed '--' args
-  const [,, ...passedArgs ] = argv._;
+  const [,, ...passedArgs] = argv._;
   const testArgs = [...passedArgs];
 
   // default set to ''
