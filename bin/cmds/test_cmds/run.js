@@ -19,15 +19,12 @@ async function echoAndExec(cmd) {
   return execAsync(cmd);
 }
 
-async function loopThroughCmds(arr, makeCmd = (it) => it, concurrency = 1) {
-  await Promise.map(arr, async (instructions) => {
-    const command = makeCmd(instructions);
-    const results = await echoAndExec(command);
-    if (!results || results.code !== 0) {
-      echo(`failed to run ${command}, exiting 128...`);
-      exit(128);
-    }
-  }, { concurrency });
+async function runCommand(cmd) {
+  const results = await echoAndExec(cmd);
+  if (!results || results.code !== 0) {
+    echo(`failed to run ${cmd}, exiting 128...`);
+    exit(128);
+  }
 }
 
 function removeCommonPrefix(from, compareWith) {
@@ -97,10 +94,7 @@ exports.handler = async (argv) => {
   const testFramework = `${argv.root}/${argv.test_framework}`;
   const customRun = argv.custom_run ? `${argv.custom_run} ` : '';
   const runner = `docker exec ${container} /bin/sh`;
-
-  await loopThroughCmds(argv.pre);
-  await loopThroughCmds(argv.arbitrary_exec, (cmd) => `docker exec ${container} ${cmd}`);
-  await loopThroughCmds(testFiles, (test) => {
+  const testCommands = testFiles.map((test) => {
     const testName = removeCommonPrefix(test, argv.tests);
     const coverageDir = `${argv.report_dir}/${testName.substring(0, testName.lastIndexOf('.'))}`;
     const cov = argv.nycCoverage ? `${nyc} --report-dir ${coverageDir}` : '';
@@ -110,7 +104,13 @@ exports.handler = async (argv) => {
       .replace('<coverageDirectory>', coverageDir);
 
     return `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${cov} ${testBin} ${test}"`;
-  }, argv.parallel);
+  });
+
+  await Promise.map(argv.pre, runCommand);
+  await Promise.map(argv.arbitrary_exec.map((cmd) => `docker exec ${container} ${cmd}`), runCommand);
+  await argv.sort
+    ? Promise.each(testCommands, runCommand)
+    : Promise.map(testCommands, runCommand, { concurrency: argv.parallel || 1 });
 
   // upload codecoverage report
   if (argv.coverage) {
