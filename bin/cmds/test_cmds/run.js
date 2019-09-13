@@ -72,7 +72,6 @@ exports.handler = async (argv) => {
   // easy way to wait for containers, can do improved detection, but it's not generic
   if (argv.rebuild.length > 0) {
     echo('rebuilding modules');
-    // eslint-disable-next-line no-restricted-syntax
     for (const mod of argv.rebuild) {
       // eslint-disable-next-line no-await-in-loop
       await execAsync(`docker exec ${container} npm rebuild ${mod}`);
@@ -88,6 +87,14 @@ exports.handler = async (argv) => {
     await echoAndExec(`sleep ${argv.sleep}`);
   }
 
+  // support argv.test_args and passed '--' args
+  const testArgs = argv._.slice(2);
+
+  // default set to ''
+  if (argv.test_args !== '') {
+    testArgs.push(argv.test_args);
+  }
+
   // now determine what we need
   const crossEnv = `${argv.root}/cross-env`;
   const nyc = `${argv.root}/nyc`;
@@ -98,12 +105,11 @@ exports.handler = async (argv) => {
     const testName = removeCommonPrefix(test, argv.tests);
     const coverageDir = `${argv.report_dir}/${testName.substring(0, testName.lastIndexOf('.'))}`;
     const cov = argv.nycCoverage ? `${nyc} --report-dir ${coverageDir}` : '';
-
     // somewhat of a hack for jest test coverage
     const testBin = testFramework
       .replace('<coverageDirectory>', coverageDir);
 
-    return `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${cov} ${testBin} ${test}"`;
+    return `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${cov} ${testBin} ${testArgs.join(' ')} ${test}"`;
   });
 
   await Promise.map(argv.pre, runCommand);
