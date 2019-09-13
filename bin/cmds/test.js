@@ -18,6 +18,12 @@ exports.builder = (yargs) => (
       description: 'run test suites in parallel',
       default: 1,
     })
+    .option('sort', {
+      alias: 's',
+      describe: 'sort tests in alphabetical order and run sequentially. disables `parallel` mode',
+      boolean: true,
+      default: false,
+    })
     .option('auto_compose', {
       type: 'boolean',
       default: false,
