@@ -16,6 +16,12 @@ exports.builder = (yargs) => (
       boolean: true,
       default: true,
     })
+    .option('tag_latest', {
+      alias: 'tl',
+      describe: 'adds :latest tag to the image',
+      boolean: true,
+      default: false,
+    })
     .option('docker_file', {
       alias: 'f',
       describe: 'path to docker file',
@@ -33,11 +39,16 @@ exports.handler = (argv) => {
   argv.base = `${argv.repository}/${argv.project}`;
   argv.baseTag = argv.include_node ? `${argv.node}-${argv.version}` : argv.version;
   argv.mainTag = `${argv.base}:${argv.baseTag}`;
-  argv.tags = [`${argv.base}:latest`];
+  argv.tags = [];
 
   // adds extra tag
   if (argv.include_node) {
     argv.tags.push(`${argv.base}:${argv.node}`);
+  }
+
+  // adds :latest tag
+  if (argv.tag_latest) {
+    argv.tags.push(`${argv.base}:latest`);
   }
 
   // a little bit hacky
