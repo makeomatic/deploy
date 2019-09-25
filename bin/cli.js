@@ -56,4 +56,5 @@ require('yargs')
   })
   .config(config)
   .help()
+  .strict()
   .argv;
