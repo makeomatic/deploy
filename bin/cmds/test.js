@@ -11,7 +11,7 @@ exports.builder = (yargs) => (
     .option('docker_compose', {
       type: 'array',
       describe: 'docker-compose files for testing',
-      default: './test/docker-compose.yml',
+      default: ['./test/docker-compose.yml'],
       normalize: true,
     })
     .option('parallel', {
