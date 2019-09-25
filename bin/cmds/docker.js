@@ -28,6 +28,7 @@ exports.builder = (yargs) => (
       default: './Dockerfile',
       normalize: true,
     })
+    .strict()
     .help()
 );
 exports.handler = (argv) => {
