@@ -135,7 +135,6 @@ exports.builder = (yargs) => (
       string: true,
       default: '',
     })
-    .strict()
     .help()
 );
 exports.handler = () => {};
