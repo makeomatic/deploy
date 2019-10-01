@@ -9,8 +9,9 @@ exports.builder = (yargs) => (
   yargs
     .commandDir('test_cmds')
     .option('docker_compose', {
-      describe: 'docker-compose file for testing',
-      default: './test/docker-compose.yml',
+      type: 'array',
+      describe: 'docker-compose files for testing',
+      default: ['./test/docker-compose.yml'],
       normalize: true,
     })
     .option('parallel', {

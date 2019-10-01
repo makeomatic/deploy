@@ -11,7 +11,7 @@ const {
 } = require('shelljs');
 
 const isWin = process.platform === 'win32';
-const withComposeFile = (filepath) => `-f ${filepath}`;
+const withComposeFile = (filepaths) => `-f ${filepaths.join(' -f ')}`;
 
 exports.command = 'compose';
 exports.desc = 'installs compose on the system';
