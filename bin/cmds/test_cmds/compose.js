@@ -11,7 +11,7 @@ const {
 } = require('shelljs');
 
 const isWin = process.platform === 'win32';
-const withComposeFile = (filepaths) => `-f ${filepaths.join(' -f ')}`;
+const withComposeFile = (filepath) => `-f ${filepath}`;
 
 exports.command = 'compose';
 exports.desc = 'installs compose on the system';
@@ -60,6 +60,11 @@ exports.handler = (argv) => {
     } else {
       dockerComposeFiles = autoComposeFile;
     }
+  }
+
+  if (argv.docker_compose_first) {
+    const firstDockerCompose = withComposeFile(argv.docker_compose_first);
+    dockerComposeFiles = `${firstDockerCompose} ${dockerComposeFiles}`;
   }
 
   // add link to compose file
