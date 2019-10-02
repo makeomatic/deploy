@@ -13,9 +13,12 @@ exports.builder = (yargs) => (
       default: './test/docker-compose.yml',
       normalize: true,
     })
-    .option('docker_compose_first', {
-      describe: 'first docker-compose file that will be start first',
+    .option('docker_compose_multi', {
+      alias: 'dcm',
+      describe: 'docker-compose files that will be started in provided order',
       type: 'string',
+      array: true,
+      default: []
     })
     .option('parallel', {
       type: 'number',

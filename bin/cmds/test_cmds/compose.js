@@ -62,9 +62,8 @@ exports.handler = (argv) => {
     }
   }
 
-  if (argv.docker_compose_first) {
-    const firstDockerCompose = withComposeFile(argv.docker_compose_first);
-    dockerComposeFiles = `${firstDockerCompose} ${dockerComposeFiles}`;
+  if (argv.docker_compose_multi.length > 0) {
+    dockerComposeFiles = `-f ${argv.docker_compose_multi.join(' -f ')}`;
   }
 
   // add link to compose file
