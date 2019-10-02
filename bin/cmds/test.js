@@ -18,7 +18,7 @@ exports.builder = (yargs) => (
       describe: 'docker-compose files that will be started in provided order',
       type: 'string',
       array: true,
-      default: []
+      default: [],
     })
     .option('parallel', {
       type: 'number',
