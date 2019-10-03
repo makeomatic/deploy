@@ -9,10 +9,16 @@ exports.builder = (yargs) => (
   yargs
     .commandDir('test_cmds')
     .option('docker_compose', {
-      type: 'array',
-      describe: 'docker-compose files for testing',
-      default: ['./test/docker-compose.yml'],
+      describe: 'docker-compose file for testing',
+      default: './test/docker-compose.yml',
       normalize: true,
+    })
+    .option('docker_compose_multi', {
+      alias: 'dcm',
+      describe: 'docker-compose files that will be started in provided order',
+      type: 'string',
+      array: true,
+      default: [],
     })
     .option('parallel', {
       type: 'number',
