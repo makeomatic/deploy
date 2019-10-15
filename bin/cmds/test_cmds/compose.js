@@ -48,6 +48,7 @@ exports.handler = (argv) => {
   }
 
   let dockerComposeFiles = withComposeFile(argv.docker_compose);
+
   /**
    * Generates dynamic docker-compose file based on the presets
    */
@@ -63,11 +64,11 @@ exports.handler = (argv) => {
   }
 
   if (argv.docker_compose_multi.length > 0) {
-    dockerComposeFiles = `-f ${argv.docker_compose_multi.join(' -f ')}`;
+    dockerComposeFiles += ` -f ${argv.docker_compose_multi.join(' -f ')}`;
   }
 
   // add link to compose file
-  argv.compose = ShellString(`"${compose}" ${dockerComposeFiles}`);
+  argv.compose = ShellString(`"${compose}" ${dockerComposeFiles.trim()}`);
 
   function stopDocker(signal, code) {
     const dockerCompose = argv.compose;
