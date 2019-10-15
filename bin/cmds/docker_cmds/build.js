@@ -33,9 +33,14 @@ exports.handler = (argv) => {
     echo('Error: failed to run compile');
     exit(1);
   }
-
+  let dockerBuildArgs = '';
+  if (argv.docker_build_args.length > 0) {
+    dockerBuildArgs = ` --build-arg ${argv.docker_build_args.map((arg) => `${arg}=\${${arg}}`).join(' --build-arg ')}`;
+    //  NPM_TOKEN=${NPM_TOKEN}
+  }
+  console.log(dockerBuildArgs, 'dockerBuildArgs');
   // start builder
-  const command = `docker build --squash -t ${mainTag} -f ${tmpDockerfile} .`;
+  const command = `docker build --squash -t ${mainTag} -f ${tmpDockerfile}${dockerBuildArgs} .`;
   echo(command);
   const build = exec(command);
 
