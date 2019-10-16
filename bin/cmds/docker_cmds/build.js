@@ -35,7 +35,7 @@ exports.handler = (argv) => {
   }
 
   const args = [
-    'docket build',
+    'docker build',
     '--squash',
     `-t ${mainTag}`,
     `-f ${tmpDockerfile}`,
