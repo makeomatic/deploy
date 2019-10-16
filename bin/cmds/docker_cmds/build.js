@@ -33,14 +33,23 @@ exports.handler = (argv) => {
     echo('Error: failed to run compile');
     exit(1);
   }
-  let dockerBuildArgs = '';
-  if (argv.docker_build_args.length > 0) {
-    dockerBuildArgs = ` --build-arg ${argv.docker_build_args.map((arg) => `${arg}=\${${arg}}`).join(' --build-arg ')}`;
-    //  NPM_TOKEN=${NPM_TOKEN}
+
+  const args = [
+    'docket build',
+    '--squash',
+    `-t ${mainTag}`,
+    `-f ${tmpDockerfile}`,
+  ];
+
+  const { docker_build_args: dba } = argv;
+  if (dba && typeof dba === 'object') {
+    for (const [prop, value] of Object.entries(dba)) {
+      args.push(`--build-arg ${prop}=${value}`);
+    }
   }
-  console.log(dockerBuildArgs, 'dockerBuildArgs');
+
   // start builder
-  const command = `docker build --squash -t ${mainTag} -f ${tmpDockerfile}${dockerBuildArgs} .`;
+  const command = `${args.join(' ')} .`;
   echo(command);
   const build = exec(command);
 

@@ -22,8 +22,8 @@
     "node": ">= 10.5.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.6.2",
-    "@babel/core": "^7.6.2",
+    "@babel/cli": "^7.6.4",
+    "@babel/core": "^7.6.4",
     "@babel/plugin-proposal-class-properties": "^7.5.5",
     "@babel/plugin-transform-strict-mode": "^7.2.0",
     "codecov": "^3.6.1",
@@ -36,13 +36,13 @@
   },
   "dependencies": {
     "@commitlint/cli": "^8.2.0",
-    "bluebird": "^3.7.0",
+    "bluebird": "^3.7.1",
     "chrome-launcher": "^0.11.2",
     "chrome-remote-interface": "^0.28.0",
     "death": "^1.1.0",
     "find-up": "^4.1.0",
     "glob": "^7.1.4",
-    "husky": "^3.0.8",
+    "husky": "^3.0.9",
     "hyperid": "^2.0.1",
     "is": "^3.2.1",
     "js-yaml": "^3.13.1",
@@ -51,12 +51,12 @@
     "lodash.set": "^4.3.2",
     "ms-conf": "^5.0.2",
     "npm-path": "^2.0.4",
-    "pino": "^5.13.4",
+    "pino": "^5.13.5",
     "read-pkg": "^5.2.0",
     "rimraf": "^3.0.0",
     "semantic-release": "15.13.24",
     "shelljs": "^0.8.3",
-    "yargs": "^14.0.0"
+    "yargs": "^14.2.0"
   },
   "bin": {
     "mdep": "./bin/cli.js"

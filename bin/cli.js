@@ -41,9 +41,6 @@ require('yargs')
   .option('docker_build_args', {
     alias: 'dba',
     describe: 'docker build args',
-    type: 'string',
-    array: true,
-    default: [],
   })
   .option('repository', {
     alias: 'repo',
