@@ -38,6 +38,10 @@ require('yargs')
     default: parentProject.name
       .replace(/^@[^/]+\//, ''),
   })
+  .option('docker_build_args', {
+    alias: 'dba',
+    describe: 'docker build args',
+  })
   .option('repository', {
     alias: 'repo',
     describe: 'docker repository to use',

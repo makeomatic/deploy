@@ -34,8 +34,22 @@ exports.handler = (argv) => {
     exit(1);
   }
 
+  const args = [
+    'docket build',
+    '--squash',
+    `-t ${mainTag}`,
+    `-f ${tmpDockerfile}`,
+  ];
+
+  const { docker_build_args: dba } = argv;
+  if (dba && typeof dba === 'object') {
+    for (const [prop, value] of Object.entries(dba)) {
+      args.push(`--build-arg ${prop}=${value}`);
+    }
+  }
+
   // start builder
-  const command = `docker build --squash -t ${mainTag} -f ${tmpDockerfile} .`;
+  const command = `${args.join(' ')} .`;
   echo(command);
   const build = exec(command);
 
