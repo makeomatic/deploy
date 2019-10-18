@@ -64,7 +64,7 @@ exports.handler = (argv) => {
   }
 
   if (argv.docker_compose_multi.length > 0) {
-    dockerComposeFiles += ` -f ${argv.docker_compose_multi.join(' -f ')}`;
+    dockerComposeFiles = ` -f ${argv.docker_compose_multi.join(' -f ')} ${dockerComposeFiles}`;
   }
 
   // add link to compose file
