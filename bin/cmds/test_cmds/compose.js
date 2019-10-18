@@ -11,7 +11,6 @@ const {
 } = require('shelljs');
 
 const isWin = process.platform === 'win32';
-const withComposeFile = (filepath) => `-f ${filepath}`;
 
 exports.command = 'compose';
 exports.desc = 'installs compose on the system';
@@ -47,28 +46,32 @@ exports.handler = (argv) => {
     chmod('+x', compose);
   }
 
-  let dockerComposeFiles = withComposeFile(argv.docker_compose);
+  const originalDockerCompose = argv.docker_compose;
+  const dockerComposeFiles = [];
+
+  if (argv.docker_compose_multi.length > 0) {
+    dockerComposeFiles.push(...argv.docker_compose_multi);
+  }
 
   /**
    * Generates dynamic docker-compose file based on the presets
    */
   if (argv.auto_compose) {
     require('./auto_compose').handler(argv);
+    const autoComposeFile = argv.docker_compose;
 
-    const autoComposeFile = withComposeFile(argv.docker_compose);
+    dockerComposeFiles.unshift(autoComposeFile);
     if (argv.with_local_compose) {
-      dockerComposeFiles += ` ${autoComposeFile}`;
-    } else {
-      dockerComposeFiles = autoComposeFile;
+      dockerComposeFiles.push(originalDockerCompose);
     }
+  } else {
+    dockerComposeFiles.push(originalDockerCompose);
   }
 
-  if (argv.docker_compose_multi.length > 0) {
-    dockerComposeFiles += ` -f ${argv.docker_compose_multi.join(' -f ')}`;
-  }
+  const composeFiles = dockerComposeFiles.map((x) => `-f ${x}`).join(' ');
 
   // add link to compose file
-  argv.compose = ShellString(`"${compose}" ${dockerComposeFiles.trim()}`);
+  argv.compose = ShellString(`"${compose}" ${composeFiles}`);
 
   function stopDocker(signal, code) {
     const dockerCompose = argv.compose;
