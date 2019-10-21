@@ -48,18 +48,16 @@ exports.handler = (argv) => {
   }
 
   let dockerComposeFiles = withComposeFile(argv.docker_compose);
-
+  let autoComposeFile = '';
   /**
    * Generates dynamic docker-compose file based on the presets
    */
   if (argv.auto_compose) {
     require('./auto_compose').handler(argv);
 
-    const autoComposeFile = withComposeFile(argv.docker_compose);
-    if (argv.with_local_compose) {
-      dockerComposeFiles += ` ${autoComposeFile}`;
-    } else {
-      dockerComposeFiles = autoComposeFile;
+    autoComposeFile = ` ${withComposeFile(argv.docker_compose)}`;
+    if (!argv.with_local_compose) {
+      dockerComposeFiles = '';
     }
   }
 
@@ -68,7 +66,7 @@ exports.handler = (argv) => {
   }
 
   // add link to compose file
-  argv.compose = ShellString(`"${compose}" ${dockerComposeFiles.trim()}`);
+  argv.compose = ShellString(`"${compose}" ${autoComposeFile}${dockerComposeFiles.trim()}`);
 
   function stopDocker(signal, code) {
     const dockerCompose = argv.compose;
