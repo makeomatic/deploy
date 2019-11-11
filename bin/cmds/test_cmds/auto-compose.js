@@ -76,7 +76,7 @@ function tester(compose, argv) {
 
 function redisCluster(compose, argv) {
   compose.services['redis-cluster'] = merge({
-    image: 'makeomatic/redis-cluster:3.2.9',
+    image: 'makeomatic/redis-cluster:5-alpine',
     hostname: 'redis-cluster',
   }, argv.extras.redisCluster);
 }
@@ -105,7 +105,7 @@ function redisSentinel(compose, argv) {
 
 function postgres(compose, argv) {
   compose.services.postgres = merge({
-    image: 'postgres:10.4-alpine',
+    image: 'postgres:12-alpine',
     hostname: 'postgres',
   }, argv.extras.postgres);
 }
@@ -161,5 +161,11 @@ function couchdb(composer, argv) {
   composer.services.couchdb = merge({
     image: 'couchdb:2',
     hostname: 'couchdb',
+    environment: {
+      COUCHDB_USER: 'admin',
+      COUCHDB_PASSWORD: 'admin',
+      COUCHDB_SECRET: 'secret',
+      NODENAME: 'docker',
+    },
   }, argv.extras.couchdb);
 }
