@@ -57,7 +57,7 @@ exports.handler = (argv) => {
    * Generates dynamic docker-compose file based on the presets
    */
   if (argv.auto_compose) {
-    require('./auto_compose').handler(argv);
+    require('./auto-compose').handler(argv);
     const autoComposeFile = argv.docker_compose;
 
     dockerComposeFiles.unshift(autoComposeFile);

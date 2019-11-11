@@ -55,7 +55,7 @@ exports.builder = (yargs) => (
     .option('services', {
       type: 'array',
       description: 'enable listed services',
-      choices: Object.keys(require('./test_cmds/auto_compose').SERVICE_MAP),
+      choices: Object.keys(require('./test_cmds/auto-compose').SERVICE_MAP),
     })
     .option('docker_compose_version', {
       alias: 'dcv',
