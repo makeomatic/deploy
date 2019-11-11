@@ -25,7 +25,7 @@ require('yargs')
   .option('node', {
     alias: 'n',
     describe: 'node version to use when building',
-    default: '10.12.0',
+    default: '12.13.0',
   })
   .option('env', {
     alias: 'E',

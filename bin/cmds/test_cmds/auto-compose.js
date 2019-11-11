@@ -15,6 +15,7 @@ const SERVICE_MAP = {
   rabbitmq,
   elasticsearch,
   cassandra,
+  couchdb,
 };
 
 exports.SERVICE_MAP = SERVICE_MAP;
@@ -154,4 +155,11 @@ function cassandra(composer, argv) {
       HEAP_NEWSIZE: '24m',
     },
   }, argv.extras.cassandra);
+}
+
+function couchdb(composer, argv) {
+  composer.services.couchdb = merge({
+    image: 'couchdb:2',
+    hostname: 'couchdb',
+  }, argv.extras.couchdb);
 }
