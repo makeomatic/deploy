@@ -84,7 +84,7 @@ function addPlugin(scriptName, script, holder) {
     addPlugin(scriptName, name, holder);
   }
 });
-
+console.log(process.env.NPX, 'process.env.NPX');
 copyConfiguration('.releaserc.json', ['.releaserc.js']);
 copyConfiguration('.commitlintrc.js');
 

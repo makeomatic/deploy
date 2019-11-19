@@ -12,6 +12,7 @@
   "scripts": {
     "lint": "eslint ./bin",
     "test": "yarn lint && ./bin/cli.js test run",
+    "postinstall": "node ./scripts/setup-semantic-release.js",
     "semantic-release": "semantic-release"
   },
   "publishConfig": {
