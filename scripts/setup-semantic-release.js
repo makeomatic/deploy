@@ -17,10 +17,10 @@ function amIaDependency() {
   const parts = cwd.split(path.sep);
   const parentFolder = parts[parts.length - 2];
   const scopedParentFodler = parts[parts.length - 3];
-  return parentFolder === 'node_modules' || scopedParentFodler === 'node_modules' || process.env.NPX;
+  return parentFolder === 'node_modules' || scopedParentFodler === 'node_modules';
 }
 
-if (!amIaDependency() && !isForced) {
+if (process.env.NPX || (!amIaDependency() && !isForced)) {
   // top level install (we are running `npm i` in this project)
   debug('we are installing own dependencies');
   process.exit(0);
