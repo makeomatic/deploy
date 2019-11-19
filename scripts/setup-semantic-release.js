@@ -20,7 +20,7 @@ function amIaDependency() {
   return parentFolder === 'node_modules' || scopedParentFodler === 'node_modules';
 }
 
-if (!amIaDependency() && !isForced) {
+if (process.env.NPX || (!amIaDependency() && !isForced)) {
   // top level install (we are running `npm i` in this project)
   debug('we are installing own dependencies');
   process.exit(0);
