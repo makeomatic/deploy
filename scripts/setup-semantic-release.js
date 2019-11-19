@@ -19,7 +19,7 @@ function amIaDependency() {
   const scopedParentFodler = parts[parts.length - 3];
   return parentFolder === 'node_modules' || scopedParentFodler === 'node_modules';
 }
-
+console.log({ amIaDependency: amIaDependency(), isForced }, '{amIaDependency: amIaDependency(), isForced}');
 if (!amIaDependency() && !isForced) {
   // top level install (we are running `npm i` in this project)
   debug('we are installing own dependencies');
@@ -84,7 +84,7 @@ function addPlugin(scriptName, script, holder) {
     addPlugin(scriptName, name, holder);
   }
 });
-console.log(process.env.NPX, 'process.env.NPX');
+
 copyConfiguration('.releaserc.json', ['.releaserc.js']);
 copyConfiguration('.commitlintrc.js');
 
