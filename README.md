@@ -89,10 +89,10 @@ cli.js test <command>
 performs tests in docker
 
 Commands:
-  cli.js test compose  prepares docker-compose file based on config
-  cli.js test compose  installs compose on the system
-  cli.js test init     adds basic files for testing
-  cli.js test run      performs testing
+  cli.js test auto-compose  prepares docker-compose file based on config
+  cli.js test compose       installs compose on the system
+  cli.js test init          adds basic files for testing
+  cli.js test run           performs testing
 
 Options:
   --node, -n                       node version to use when building
