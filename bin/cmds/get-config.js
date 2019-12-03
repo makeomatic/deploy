@@ -1,9 +1,13 @@
 const { get } = require('lodash');
 
-exports.command = 'get-config';
+exports.command = 'get-config [path]';
 exports.desc = 'return mdeprc properties';
 exports.builder = async (yargs) => {
   yargs
+    .positional('path', {
+      describe: 'path in config',
+      type: 'string',
+    })
     .option('path', {
       describe: 'path in config',
       type: 'string',
@@ -12,5 +16,5 @@ exports.builder = async (yargs) => {
     .help();
 };
 exports.handler = (argv) => {
-  console.info(get(argv, argv.path));
+  console.info(get(argv, argv.path)); // eslint-disable-line no-console
 };

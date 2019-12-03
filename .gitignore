@@ -36,3 +36,4 @@ lib
 .nyc_output
 pk.json
 ss/*.jpeg
+/*.tgz

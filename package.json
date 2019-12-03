@@ -19,31 +19,32 @@
     "access": "public"
   },
   "engine": {
-    "node": ">= 10.5.0"
+    "node": ">= 10.15.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.7.0",
-    "@babel/core": "^7.7.2",
-    "@babel/plugin-proposal-class-properties": "^7.7.0",
-    "@babel/plugin-transform-strict-mode": "^7.2.0",
+    "@babel/cli": "^7.7.4",
+    "@babel/core": "^7.7.4",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-transform-strict-mode": "^7.7.4",
     "codecov": "^3.6.1",
     "cross-env": "^6.0.3",
-    "eslint": "^6.6.0",
+    "eslint": "^6.7.2",
     "eslint-config-makeomatic": "^4.0.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-unicorn": "^12.1.0",
-    "jest": "^24.9.0"
+    "eslint-plugin-unicorn": "^14.0.1",
+    "jest": "^24.9.0",
+    "tempy": "^0.3.0"
   },
   "dependencies": {
     "@commitlint/cli": "^8.2.0",
-    "bluebird": "^3.7.1",
+    "bluebird": "^3.7.2",
     "chrome-launcher": "^0.12.0",
     "chrome-remote-interface": "^0.28.0",
     "death": "^1.1.0",
     "find-up": "^4.1.0",
     "glob": "^7.1.6",
-    "husky": "^3.0.9",
+    "husky": "^3.1.0",
     "hyperid": "^2.0.1",
     "is": "^3.2.1",
     "js-yaml": "^3.13.1",
@@ -52,24 +53,25 @@
     "lodash.set": "^4.3.2",
     "ms-conf": "^5.0.2",
     "npm-path": "^2.0.4",
-    "pino": "^5.13.6",
+    "pino": "^5.14.0",
     "read-pkg": "^5.2.0",
     "rimraf": "^3.0.0",
-    "semantic-release": "15.13.30",
+    "semantic-release": "15.13.31",
     "shelljs": "^0.8.3",
-    "yargs": "^14.2.0"
+    "strip-final-newline": "^2.0.0",
+    "yargs": "^15.0.2"
   },
   "bin": {
     "mdep": "./bin/cli.js"
   },
   "peerDependencies": {
-    "cross-env": "^5.2.0 | ^6.0.0"
+    "cross-env": "^6.0.0"
   },
   "files": [
     "bin/",
     "templates/",
     "scripts/",
-    "git-hooks",
+    "git-hooks/",
     ".releaserc.json",
     ".commitlintrc.js"
   ],

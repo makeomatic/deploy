@@ -1,14 +1,23 @@
 #!/usr/bin/env node
 
-/* eslint-disable import/no-dynamic-require, no-console */
+/* eslint-disable no-console, no-await-in-loop */
 
+const Promise = require('bluebird');
+const util = require('util');
 const debug = require('debug')('makeomatic:deploy');
 const path = require('path');
 const get = require('lodash.get');
 const set = require('lodash.set');
 const fs = require('fs');
+const childProcess = require('child_process');
+const stripEOF = require('strip-final-newline');
 
-const isForced = process.argv.some(a => a === '--force');
+const exec = util.promisify(childProcess.execFile);
+const stat = util.promisify(fs.stat);
+const readFile = util.promisify(fs.readFile);
+const copyFile = util.promisify(fs.copyFile);
+const writeFile = util.promisify(fs.writeFile);
+const isForced = process.argv.some((a) => a === '--force');
 
 function amIaDependency() {
   const cwd = typeof __dirname !== 'undefined' && __dirname
@@ -20,42 +29,64 @@ function amIaDependency() {
   return parentFolder === 'node_modules' || scopedParentFodler === 'node_modules';
 }
 
-if (process.env.NPX || (!amIaDependency() && !isForced)) {
-  // top level install (we are running `npm i` in this project)
-  debug('we are installing own dependencies');
-  process.exit(0);
+function rootDir() {
+  return path.resolve(process.cwd(), '../../..');
 }
-
-debug('installing this module as a dependency');
 
 function clientPackageJsonFilename() {
-  return path.join(process.cwd(), '..', '..', '..', 'package.json');
+  return path.resolve(rootDir(), 'package.json');
 }
 
-function copyConfiguration(filename, _fallback) {
-  const fallback = Array.isArray(_fallback) ? [filename].concat(_fallback) : [filename];
-  const prefix = path.join(process.cwd(), '..', '..', '..');
-  const rcpath = path.join(prefix, filename);
-  let stat;
+async function yarnGlobalDir() {
+  try {
+    const { stdout } = await exec('yarn', ['global', 'dir']);
+    return stripEOF(stdout);
+  } catch (e) {
+    return null;
+  }
+}
 
-  // eslint-disable-next-line guard-for-in, no-restricted-syntax
-  for (const idx in fallback) {
+async function npmGlobalDir() {
+  try {
+    const { stdout } = await exec('npm', ['-g', 'root']);
+    return path.resolve(stripEOF(stdout), '../');
+  } catch (e) {
+    return null;
+  }
+}
+
+async function isInstallingGlobally() {
+  const globalDirs = await Promise.all([
+    yarnGlobalDir(),
+    npmGlobalDir(),
+  ]);
+
+  debug('looking in %o for %o', globalDirs, rootDir());
+
+  return globalDirs.includes(rootDir());
+}
+
+async function copyConfiguration(filename, _fallback) {
+  const fallback = Array.isArray(_fallback) ? [filename].concat(_fallback) : [filename];
+  const prefix = rootDir();
+  const rcpath = path.join(prefix, filename);
+
+  for (const idx of fallback) {
     try {
-      stat = fs.statSync(path.join(prefix, fallback[idx]));
-      // do not overwrite
-      if (stat.isFile() === true) return;
+      const datum = await stat(path.join(prefix, fallback[idx]));
+      if (datum.isFile() === true) return; // do not overwrite
     } catch (e) {
       // no file - write a new one down
     }
   }
 
   // copy over
-  fs.copyFileSync(path.join(__dirname, '..', filename), rcpath);
+  await copyFile(path.join(__dirname, '..', filename), rcpath);
 }
 
-function alreadyInstalled(scriptName, script, holder) {
+async function alreadyInstalled(scriptName, script, holder) {
   const filename = clientPackageJsonFilename();
-  const pkg = JSON.parse(fs.readFileSync(filename));
+  const pkg = JSON.parse(await readFile(filename));
   if (!get(pkg, holder) || !get(pkg, holder)[scriptName]) {
     return false;
   }
@@ -63,30 +94,51 @@ function alreadyInstalled(scriptName, script, holder) {
   return true;
 }
 
-function addPlugin(scriptName, script, holder) {
+async function addPlugin(scriptName, script, holder) {
   const filename = clientPackageJsonFilename();
-  const pkg = JSON.parse(fs.readFileSync(filename));
+  const pkg = JSON.parse(await readFile(filename));
 
   set(pkg, `${holder}.${scriptName}`, script);
   const text = `${JSON.stringify(pkg, null, 2)}\n`;
-  fs.writeFileSync(filename, text, 'utf8');
+  await writeFile(filename, text, 'utf8');
   console.log(`✅  set ${holder}.${scriptName} to "${script}" in`, filename);
 }
 
-[
-  ['semantic-release', 'semantic-release', 'scripts'],
-  ['commit-msg', 'commitlint -e $HUSKY_GIT_PARAMS', 'husky.hooks'],
-  ['prepare-commit-msg', './node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $HUSKY_GIT_PARAMS', 'husky.hooks'],
-].forEach((input) => {
-  const [scriptName, name, holder] = input;
-  if (!alreadyInstalled(scriptName, name, holder)) {
-    console.log(`⚠️  Installing ${holder}.${scriptName} plugin ${name}`);
-    addPlugin(scriptName, name, holder);
+
+async function main() {
+  if ((!amIaDependency() || await isInstallingGlobally()) && !isForced) {
+    // top level install (we are running `npm i` in this project)
+    debug('we are installing own dependencies');
+    process.exit(0);
   }
-});
 
-copyConfiguration('.releaserc.json', ['.releaserc.js']);
-copyConfiguration('.commitlintrc.js');
+  debug('installing this module as a dependency');
 
-console.log('⚠️ Use "semantic-release-cli setup" to complete setting up semantic-release');
-console.log('⚠️ For scoped packages add {"publishConfig":{"access": "public"}} to package.json');
+  const scripts = [
+    ['semantic-release', 'semantic-release', 'scripts'],
+    ['commit-msg', 'commitlint -e $HUSKY_GIT_PARAMS', 'husky.hooks'],
+    ['prepare-commit-msg', './node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $HUSKY_GIT_PARAMS', 'husky.hooks'],
+  ];
+
+  for (const [scriptName, name, holder] of scripts) {
+    if (!await alreadyInstalled(scriptName, name, holder)) {
+      console.log(`⚠️  Installing ${holder}.${scriptName} plugin ${name}`);
+      await addPlugin(scriptName, name, holder);
+    }
+  }
+
+  await copyConfiguration('.releaserc.json', ['.releaserc.js']);
+  await copyConfiguration('.commitlintrc.js');
+
+  console.log('⚠️ Use "semantic-release-cli setup" to complete setting up semantic-release');
+  console.log('⚠️ For scoped packages add {"publishConfig":{"access": "public"}} to package.json');
+}
+
+(async () => {
+  try {
+    await main();
+  } catch (e) {
+    console.error(e);
+    process.exit(128);
+  }
+})();

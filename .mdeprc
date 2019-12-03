@@ -1,6 +1,6 @@
 {
   "nycCoverage": false,
-  "test_framework": "jest --coverage --coverageDirectory <coverageDirectory> --detectOpenHandles --runTestsByPath",
+  "test_framework": "jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --runInBand",
   "tests": "__tests__/*.js",
   "auto_compose": true,
   "node": "12.13.0",
@@ -18,7 +18,8 @@
     "tester": {
       "shm_size": "128m",
       "environment": {
-        "CHROME_PATH": "/usr/bin/chromium-browser"
+        "CHROME_PATH": "/usr/bin/chromium-browser",
+        "DEBUG": "${DEBUG:-''}"
       }
     }
   }
