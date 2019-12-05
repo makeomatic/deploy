@@ -66,16 +66,17 @@ async function isInstallingGlobally() {
   return globalDirs.includes(rootDir());
 }
 
-async function copyConfiguration(filename, _fallback) {
-  const fallback = Array.isArray(_fallback) ? [filename].concat(_fallback) : [filename];
+async function copyConfiguration(filename, _fallback = []) {
+  const names = Array.isArray(_fallback) ? [filename].concat(_fallback) : [filename];
   const prefix = rootDir();
   const rcpath = path.join(prefix, filename);
 
-  for (const idx of fallback) {
+  for (const name of names) {
     try {
-      const datum = await stat(path.join(prefix, fallback[idx]));
+      const datum = await stat(path.join(prefix, name));
       if (datum.isFile() === true) return; // do not overwrite
     } catch (e) {
+      debug('failed to stat', e);
       // no file - write a new one down
     }
   }

@@ -4,9 +4,13 @@ const { directory } = require('tempy');
 const { resolve } = require('path');
 const { promisify } = require('util');
 const stripEOF = require('strip-final-newline');
+const fs = require('fs');
 const execFile = promisify(require('child_process').execFile);
-const rm = promisify(require('fs').unlink);
-const stat = promisify(require('fs').stat);
+
+const rm = promisify(fs.unlink);
+const stat = promisify(fs.stat);
+const writeFile = promisify(fs.writeFile);
+const readFile = promisify(fs.readFile);
 
 describe('test installing the package', () => {
   const kFilename = 'deploy.tgz';
@@ -47,6 +51,23 @@ describe('test installing the package', () => {
       expect((await stat('.releaserc.json')).isFile()).toBe(true);
       expect((await stat('.commitlintrc.js')).isFile()).toBe(true);
     });
+
+    test('on reinstall doesnt overwrite existing .releaserc.js(on)', async () => {
+      expect.assertions(1);
+
+      await writeFile('.releaserc.json', 'overwrite');
+      const { stderr } = await execFile('yarn', ['add', tarball]);
+      console.info(stderr);
+      await expect(readFile('.releaserc.json', 'utf8')).resolves.toBe('overwrite');
+    }, 240000);
+
+    test('on reinstall doesnt overwrite existing .commitlintrc.js', async () => {
+      expect.assertions(1);
+
+      await writeFile('.commitlintrc.js', 'overwrite');
+      await execFile('yarn', ['add', tarball]);
+      await expect(readFile('.commitlintrc.js', 'utf8')).resolves.toBe('overwrite');
+    }, 240000);
   });
 
   describe('installs globally', () => {
