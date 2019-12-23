@@ -78,7 +78,7 @@ describe('test installing the package', () => {
     test('returns current node version in module', async () => {
       process.chdir(cwd);
       const { stdout } = await execFile('mdep', ['get-config', '--path', 'node']);
-      expect(stripEOF(stdout)).toBe('12.13.0');
+      expect(stripEOF(stdout)).toBe('12.14.0');
     });
   });
 

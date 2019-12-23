@@ -3,7 +3,7 @@
   "test_framework": "jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --runInBand",
   "tests": "__tests__/*.js",
   "auto_compose": true,
-  "node": "12.13.0",
+  "node": "12.14.0",
   "tester_flavour": "chrome-tester",
   "services": [
     "redisSentinel",
