@@ -142,6 +142,11 @@ exports.builder = (yargs) => (
       string: true,
       default: '',
     })
+    .option('pull', {
+      describe: 'force pull docker containers',
+      type: 'boolean',
+      default: false,
+    })
     .help()
 );
 exports.handler = () => {};
