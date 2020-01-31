@@ -111,7 +111,8 @@ exports.handler = async (argv) => {
   const testCommands = testFiles.map((test) => {
     const testName = removeCommonPrefix(test, argv.tests);
     const coverageDir = `${argv.report_dir}/${testName.substring(0, testName.lastIndexOf('.'))}`;
-    const cov = argv.nycCoverage ? `${nyc} --report-dir ${coverageDir}` : '';
+    const nycReportDir = argv.nycReport ? ` --report-dir ${coverageDir}` : '';
+    const cov = argv.nycCoverage ? `${nyc}${nycReportDir}` : '';
     // somewhat of a hack for jest test coverage
     const testBin = testFramework
       .replace('<coverageDirectory>', coverageDir);
@@ -121,9 +122,13 @@ exports.handler = async (argv) => {
 
   await Promise.map(argv.pre, runCommand);
   await Promise.map(argv.arbitrary_exec.map((cmd) => `docker exec ${container} ${cmd}`), runCommand);
-  await argv.sort
+
+  const testCmds = argv.sort
     ? Promise.each(testCommands, runCommand)
     : Promise.map(testCommands, runCommand, { concurrency: argv.parallel || 1 });
+  await testCmds;
+
+  await Promise.map(argv.post_exec.map((cmd) => `docker exec ${container} ${cmd}`), runCommand);
 
   // upload codecoverage report
   if (argv.coverage) {
