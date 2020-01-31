@@ -137,6 +137,11 @@ exports.builder = (yargs) => (
       boolean: true,
       default: true,
     })
+    .option('nycReport', {
+      describe: 'set to --no-nycReport to disable Nyc report generation',
+      boolean: true,
+      default: true,
+    })
     .option('test_args', {
       describe: 'extra arguments for test framework',
       string: true,
@@ -146,6 +151,11 @@ exports.builder = (yargs) => (
       describe: 'force pull docker containers',
       type: 'boolean',
       default: false,
+    })
+    .option('post_exec', {
+      describe: 'commands to exec in docker tester after all tests finished',
+      default: [],
+      array: true,
     })
     .help()
 );
