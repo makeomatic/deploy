@@ -107,6 +107,9 @@ function postgres(compose, argv) {
   compose.services.postgres = merge({
     image: 'postgres:12-alpine',
     hostname: 'postgres',
+    environment: {
+      POSTGRES_HOST_AUTH_METHOD: 'trust',
+    },
   }, argv.extras.postgres);
 }
 
