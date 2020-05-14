@@ -46,7 +46,9 @@ exports.handler = (argv) => {
   argv.base = `${argv.repository}/${argv.project}`;
   argv.baseTag = argv.include_node ? `${argv.node}-${argv.version}` : argv.version;
   argv.mainTag = `${argv.base}:${argv.baseTag}`;
-  argv.tags = argv.extra_tags;
+  argv.tags = argv.extra_tags.map((tag) => (
+    `${argv.base}:${tag}`
+  ));
 
   // adds extra tag
   if (argv.include_node) {
