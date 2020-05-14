@@ -37,3 +37,6 @@ lib
 pk.json
 ss/*.jpeg
 /*.tgz
+
+# IDEs
+.idea
