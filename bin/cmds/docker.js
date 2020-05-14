@@ -28,6 +28,12 @@ exports.builder = (yargs) => (
       default: './Dockerfile',
       normalize: true,
     })
+    .option('extra_tags', {
+      alias: 'T',
+      describe: 'list of additional tags for the image',
+      default: [],
+      array: true,
+    })
     .strict(false)
     .help()
 );
@@ -40,7 +46,7 @@ exports.handler = (argv) => {
   argv.base = `${argv.repository}/${argv.project}`;
   argv.baseTag = argv.include_node ? `${argv.node}-${argv.version}` : argv.version;
   argv.mainTag = `${argv.base}:${argv.baseTag}`;
-  argv.tags = [];
+  argv.tags = argv.extra_tags;
 
   // adds extra tag
   if (argv.include_node) {

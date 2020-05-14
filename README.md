@@ -79,6 +79,8 @@ Options:
   --include_node, --in  includes node version in the tag
                                                        [boolean] [default: true]
   --docker_file, -f     path to docker file   [string] [default: "./Dockerfile"]
+  --extra_tags, -T      list of additional tags for the image   
+                                                           [array] [default: []]
 ```
 
 ## Test
