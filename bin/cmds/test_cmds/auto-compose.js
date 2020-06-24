@@ -26,7 +26,7 @@ exports.handler = (argv) => {
 
   // Header of the file
   const compose = {};
-  compose.version = '3';
+  compose.version = argv.acv;
   compose.networks = {};
   compose.services = {};
 

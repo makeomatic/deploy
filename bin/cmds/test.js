@@ -35,6 +35,11 @@ exports.builder = (yargs) => (
       type: 'boolean',
       default: false,
     })
+    .option('auto_compose_version', {
+      type: 'string',
+      default: '3',
+      alias: 'acv',
+    })
     .option('with_local_compose', {
       type: 'boolean',
       default: false,
