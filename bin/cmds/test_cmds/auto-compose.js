@@ -9,6 +9,8 @@ const { mkdir } = require('shelljs');
 
 const SERVICE_MAP = {
   redis,
+  rejson,
+  rejsonSentinel,
   redisCluster,
   redisSentinel,
   postgres,
@@ -89,6 +91,14 @@ function redis(compose, argv) {
   }, argv.extras.redis);
 }
 
+function rejson(compose, argv) {
+  compose.services.rejson = merge({
+    image: 'redislabs/rejson',
+    hostname: 'rejson',
+    expose: ['6379'],
+  }, argv.extras.rejson);
+}
+
 function redisSentinel(compose, argv) {
   redis(compose, argv);
 
@@ -101,6 +111,20 @@ function redisSentinel(compose, argv) {
     volumes: [`${entrypoint}:/entrypoint.sh:ro`],
     command: '/bin/sh /entrypoint.sh redis',
   }, argv.extras.redisSentinel);
+}
+
+function rejsonSentinel(compose, argv) {
+  rejson(compose, argv);
+
+  const entrypoint = path.resolve(__dirname, '../../../templates/redis-sentinel.sh');
+  compose.services['rejson-Sentinel'] = merge({
+    image: 'redis:5-alpine',
+    hostname: 'rejson-sentinel',
+    expose: ['26379'],
+    depends_on: ['rejson'],
+    volumes: [`${entrypoint}:/entrypoint.sh:ro`],
+    command: '/bin/sh /entrypoint.sh rejson',
+  }, argv.extras.rejsonSentinel);
 }
 
 function postgres(compose, argv) {
