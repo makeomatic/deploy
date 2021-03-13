@@ -52,7 +52,7 @@ exports.handler = (argv) => {
 
   // write out the file, ensure dir exists
   mkdir(`${dir}/${argv.project}`);
-  fs.writeFileSync(location, jsYaml.safeDump(compose));
+  fs.writeFileSync(location, jsYaml.dump(compose));
 
   // rewrite location of docker-compose
   argv.docker_compose = location;
@@ -122,7 +122,7 @@ function rabbitmq(compose, argv) {
 
 function elasticsearch(compose, argv) {
   compose.services.elasticsearch = merge({
-    image: 'docker.elastic.co/elasticsearch/elasticsearch:6.4.1',
+    image: 'elasticsearch:7.11.1',
     hostname: 'elasticsearch',
     expose: [
       '9200',
