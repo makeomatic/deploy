@@ -116,8 +116,9 @@ Options:
   --extras                         any extras for tester docker container, will
                                    be merged              [string] [default: {}]
   --services                       enable listed services
-         [array] [choices: "redis", "redisCluster", "redisSentinel", "postgres",
-                                                                     "rabbitmq"]
+         [array] [choices:     "redisSentinel", "rejsonSentinel", "redisCluster",
+                               "rabbitmq", "postgres", "elasticsearch", "cassandra",
+                               "couchdb"]
   --docker_compose_version, --dcv  docker-compose version to use
                                                              [default: "1.11.2"]
   --docker_compose_force, --dcf    forces to install local copy of
