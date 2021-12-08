@@ -16,8 +16,9 @@ exports.handler = (argv) => {
 
   // verify if we have compose or not
   const docker = which('docker');
+  const dockerCompose = which('docker-compose');
   const mutagen = which('mutagen');
-  const compose = mutagen || docker;
+  const compose = mutagen || dockerCompose || docker;
 
   const originalDockerCompose = argv.docker_compose;
   const dockerComposeFiles = [];
