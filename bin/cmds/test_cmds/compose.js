@@ -1,9 +1,3 @@
-/**
- * Installs compose
- * @type {String}
- */
-
-const assert = require('assert');
 const npmPath = require('npm-path');
 const onDeath = require('death')({ SIGHUP: true, exit: true });
 const { exec, echo, which, ShellString } = require('shelljs');
@@ -18,19 +12,8 @@ exports.handler = (argv) => {
   // verify if we have compose or not
   const docker = which('docker');
   const dockerComposeBin = which('docker-compose');
-  const mutagen = which('mutagen');
-
-  let compose;
-  if (mutagen) {
-    compose = `"${mutagen}" compose`;
-  } else if (dockerComposeBin) {
-    compose = dockerComposeBin;
-  } else if (docker) {
-    compose = `"${docker}" compose`;
-  } else {
-    assert.fail('docker compose not available');
-  }
-
+  const mutagen = which('mutagen-compose');
+  const compose = mutagen || dockerComposeBin || `"${docker}" compose`;
   const originalDockerCompose = argv.docker_compose;
   const dockerComposeFiles = [];
 

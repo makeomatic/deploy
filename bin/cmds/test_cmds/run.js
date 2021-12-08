@@ -74,7 +74,7 @@ exports.handler = async (argv) => {
     echo('failed to get container id. Exit 128');
     exit(128);
   }
-  const container = containerData.stdout.trim();
+  const container = containerData.stdout.trim().split('\n').pop();
 
   // easy way to wait for containers, can do improved detection, but it's not generic
   if (argv.rebuild.length > 0) {
