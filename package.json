@@ -29,12 +29,12 @@
     "@babel/plugin-transform-strict-mode": "^7.12.13",
     "codecov": "^3.8.1",
     "cross-env": "^7.0.3",
-    "eslint": "^8.3.0",
+    "eslint": "^8.4.1",
     "eslint-config-makeomatic": "^5.0.4",
     "eslint-plugin-import": "^2.25.3",
-    "eslint-plugin-promise": "^5.1.1",
+    "eslint-plugin-promise": "^5.2.0",
     "eslint-plugin-unicorn": "^39.0.0",
-    "jest": "^27.4.2",
+    "jest": "^27.4.3",
     "tempy": "^1.0.0"
   },
   "dependencies": {
@@ -54,13 +54,13 @@
     "lodash.set": "^4.3.2",
     "ms-conf": "^7.0.2",
     "npm-path": "^2.0.4",
-    "pino": "^7.5.0",
+    "pino": "^7.5.1",
     "read-pkg": "^5.2.0",
     "rimraf": "^3.0.2",
     "semantic-release": "18.0.1",
     "shelljs": "^0.8.3",
     "strip-final-newline": "=2.x.x",
-    "yargs": "^17.2.1"
+    "yargs": "^17.3.0"
   },
   "bin": {
     "mdep": "./bin/cli.js"
