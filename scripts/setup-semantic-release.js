@@ -8,15 +8,11 @@ const debug = require('debug')('makeomatic:deploy');
 const path = require('path');
 const get = require('lodash.get');
 const set = require('lodash.set');
-const fs = require('fs');
+const fs = require('fs/promises');
 const childProcess = require('child_process');
 const stripEOF = require('strip-final-newline');
 
 const exec = util.promisify(childProcess.execFile);
-const stat = util.promisify(fs.stat);
-const readFile = util.promisify(fs.readFile);
-const copyFile = util.promisify(fs.copyFile);
-const writeFile = util.promisify(fs.writeFile);
 const isForced = process.argv.some((a) => a === '--force');
 
 function amIaDependency() {
@@ -73,7 +69,7 @@ async function copyConfiguration(filename, _fallback = []) {
 
   for (const name of names) {
     try {
-      const datum = await stat(path.join(prefix, name));
+      const datum = await fs.stat(path.join(prefix, name));
       if (datum.isFile() === true) return; // do not overwrite
     } catch (e) {
       debug('failed to stat', e);
@@ -82,12 +78,24 @@ async function copyConfiguration(filename, _fallback = []) {
   }
 
   // copy over
-  await copyFile(path.join(__dirname, '..', filename), rcpath);
+  await fs.copyFile(path.join(__dirname, '..', filename), rcpath);
+  console.log(`✅  ${rcpath} created`);
+}
+
+async function getPkg() {
+  const filename = clientPackageJsonFilename();
+  return JSON.parse(await fs.readFile(filename));
+}
+
+async function savePackage(contents) {
+  const filename = clientPackageJsonFilename();
+  const text = `${JSON.stringify(contents, null, 2)}\n`;
+  await fs.writeFile(filename, text, 'utf8');
+  return filename;
 }
 
 async function alreadyInstalled(scriptName, script, holder) {
-  const filename = clientPackageJsonFilename();
-  const pkg = JSON.parse(await readFile(filename));
+  const pkg = await getPkg();
   if (!get(pkg, holder) || !get(pkg, holder)[scriptName]) {
     return false;
   }
@@ -96,15 +104,21 @@ async function alreadyInstalled(scriptName, script, holder) {
 }
 
 async function addPlugin(scriptName, script, holder) {
-  const filename = clientPackageJsonFilename();
-  const pkg = JSON.parse(await readFile(filename));
-
+  const pkg = await getPkg();
   set(pkg, `${holder}.${scriptName}`, script);
-  const text = `${JSON.stringify(pkg, null, 2)}\n`;
-  await writeFile(filename, text, 'utf8');
+  const filename = await savePackage(pkg);
   console.log(`✅  set ${holder}.${scriptName} to "${script}" in`, filename);
 }
 
+async function hasDir(name) {
+  try {
+    const prefix = rootDir();
+    await fs.stat(path.join(prefix, name));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
 
 async function main() {
   if ((!amIaDependency() || await isInstallingGlobally()) && !isForced) {
@@ -117,8 +131,6 @@ async function main() {
 
   const scripts = [
     ['semantic-release', 'semantic-release', 'scripts'],
-    ['commit-msg', 'commitlint -e $HUSKY_GIT_PARAMS', 'husky.hooks'],
-    ['prepare-commit-msg', './node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $HUSKY_GIT_PARAMS', 'husky.hooks'],
   ];
 
   for (const [scriptName, name, holder] of scripts) {
@@ -130,6 +142,34 @@ async function main() {
 
   await copyConfiguration('.releaserc.json', ['.releaserc.js']);
   await copyConfiguration('.commitlintrc.js');
+
+  if (!(await hasDir('.husky'))) {
+    console.log('⚠️ husky not initialized yet');
+    const { stdout } = await exec('yarn', ['husky', 'install'], { cwd: rootDir() });
+    console.log('✅  husky initialized:');
+    console.log(stdout);
+  }
+
+  const pkg = await getPkg();
+  if (pkg.husky) {
+    for (const entry of Object.entries(pkg.husky)) {
+      const [key] = entry;
+      let [, script] = entry;
+      if (!/^yarn|np[mx] /.test(script)) {
+        script = `npx --no-install ${script}`;
+      }
+      pkg.husky[key] = script.replace(/\$?HUSKY_GIT_PARAMS/g, '$1');
+    }
+
+    console.log('⚠️ migrating husky config');
+    await savePackage(pkg);
+    const { stdout } = await exec('npm', ['exec', '--', 'github:typicode/husky-4-to-7', '--remove-v4-config'], { cwd: rootDir() });
+    console.log('✅  husky 4-to-7 migrated:');
+    console.log(stdout);
+  }
+
+  await copyConfiguration('.husky/commit-msg');
+  await copyConfiguration('.husky/prepare-commit-msg');
 
   console.log('⚠️ Use "semantic-release-cli setup" to complete setting up semantic-release');
   console.log('⚠️ For scoped packages add {"publishConfig":{"access": "public"}} to package.json');

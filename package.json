@@ -13,7 +13,8 @@
     "lint": "eslint ./bin",
     "test": "yarn lint && ./bin/cli.js test run",
     "postinstall": "node ./scripts/setup-semantic-release.js",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release",
+    "prepare": "husky install"
   },
   "publishConfig": {
     "access": "public"
@@ -28,23 +29,23 @@
     "@babel/plugin-transform-strict-mode": "^7.12.13",
     "codecov": "^3.8.1",
     "cross-env": "^7.0.3",
-    "eslint": "^7.22.0",
+    "eslint": "^8.3.0",
     "eslint-config-makeomatic": "^5.0.4",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-promise": "^4.3.1",
-    "eslint-plugin-unicorn": "^28.0.2",
-    "jest": "^26.6.3",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-promise": "^5.1.1",
+    "eslint-plugin-unicorn": "^39.0.0",
+    "jest": "^27.4.2",
     "tempy": "^1.0.0"
   },
   "dependencies": {
-    "@commitlint/cli": "^12.0.1",
+    "@commitlint/cli": "^15.0.0",
     "bluebird": "^3.7.2",
-    "chrome-launcher": "^0.13.4",
-    "chrome-remote-interface": "^0.29.0",
+    "chrome-launcher": "^0.15.0",
+    "chrome-remote-interface": "^0.31.1",
     "death": "^1.1.0",
     "find-up": "^5.0.0",
     "glob": "^7.1.6",
-    "husky": "~4.x.x",
+    "husky": "~7.0.4",
     "hyperid": "^2.1.0",
     "is": "^3.2.1",
     "js-yaml": "^4.0.0",
@@ -53,13 +54,13 @@
     "lodash.set": "^4.3.2",
     "ms-conf": "^7.0.2",
     "npm-path": "^2.0.4",
-    "pino": "^6.11.2",
+    "pino": "^7.5.0",
     "read-pkg": "^5.2.0",
     "rimraf": "^3.0.2",
-    "semantic-release": "17.4.2",
+    "semantic-release": "18.0.1",
     "shelljs": "^0.8.3",
-    "strip-final-newline": "^2.0.0",
-    "yargs": "^16.2.0"
+    "strip-final-newline": "=2.x.x",
+    "yargs": "^17.2.1"
   },
   "bin": {
     "mdep": "./bin/cli.js"
@@ -71,16 +72,12 @@
     "bin/",
     "templates/",
     "scripts/",
-    "git-hooks/",
+    ".husky/*",
+    "!.husky/_",
     ".releaserc.json",
     ".commitlintrc.js"
   ],
   "jest": {
     "testURL": "http://tester.local"
-  },
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS"
-    }
   }
 }

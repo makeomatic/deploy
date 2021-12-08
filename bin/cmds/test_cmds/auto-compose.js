@@ -29,6 +29,23 @@ exports.handler = (argv) => {
   compose.version = argv.acv;
   compose.networks = {};
   compose.services = {};
+  compose.volumes = {};
+
+  if (argv.isMutagen) {
+    compose.volumes['makeomatic-deploy-code'] = {};
+    compose['x-mutagen'] = {
+      sync: {
+        defaults: {
+          ignore: { vcs: true },
+          mode: 'two-way-resolved',
+        },
+        code: {
+          alpha: process.cwd(),
+          beta: 'volume://makeomatic-deploy-code',
+        },
+      },
+    };
+  }
 
   // Identification
   if (Array.isArray(argv.services) && argv.services.length) {
@@ -66,7 +83,7 @@ function tester(compose, argv) {
     image: argv.tester_image || `makeomatic/node:${argv.node}-${argv.tester_flavour}`,
     hostname: 'tester',
     working_dir: '/src',
-    volumes: ['${PWD}:/src'],
+    volumes: [argv.isMutagen ? 'makeomatic-deploy-code:/src' : '${PWD}:/src'],
     environment: {
       NODE_ENV: 'test',
     },
@@ -105,7 +122,7 @@ function redisSentinel(compose, argv) {
 
 function postgres(compose, argv) {
   compose.services.postgres = merge({
-    image: 'postgres:12-alpine',
+    image: 'postgres:14-alpine',
     hostname: 'postgres',
     environment: {
       POSTGRES_HOST_AUTH_METHOD: 'trust',
@@ -115,14 +132,14 @@ function postgres(compose, argv) {
 
 function rabbitmq(compose, argv) {
   compose.services.rabbitmq = merge({
-    image: 'rabbitmq:3.7.8-management-alpine',
+    image: 'rabbitmq:3-management-alpine',
     hostname: 'rabbitmq',
   }, argv.extras.rabbitmq);
 }
 
 function elasticsearch(compose, argv) {
   compose.services.elasticsearch = merge({
-    image: 'elasticsearch:7.11.1',
+    image: 'elasticsearch:7.14.2',
     hostname: 'elasticsearch',
     expose: [
       '9200',

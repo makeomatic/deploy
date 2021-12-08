@@ -4,11 +4,8 @@
  */
 
 const npmPath = require('npm-path');
-const path = require('path');
 const onDeath = require('death')({ SIGHUP: true, exit: true });
-const {
-  exec, echo, which, exit, mkdir, chmod, ShellString,
-} = require('shelljs');
+const { exec, echo, which, ShellString } = require('shelljs');
 
 const isWin = process.platform === 'win32';
 
@@ -18,36 +15,16 @@ exports.handler = (argv) => {
   npmPath.set();
 
   // verify if we have compose or not
-  let compose = which('docker-compose');
-  const version = compose && exec(`"${compose}" --version`).stdout.match(/\d+\.\d+\.\d+/)[0];
-
-  // compose not found - install
-  if (compose === null || (argv.dcf && version !== argv.dcv)) {
-    if (compose === null) {
-      echo(`docker-compose was not found on the system, installing v${argv.dcv} into ./node_modules/.bin`);
-    } else {
-      echo(`docker-compose of ${version} was found at ${compose}, but force install provided, updating`);
-    }
-
-    // creating dir to make sure it exists
-    mkdir('./node_modules/.bin');
-
-    const distribution = exec('uname -s').stdout.trim();
-    const arch = exec('uname -m').stdout.trim();
-    const link = `https://github.com/docker/compose/releases/download/${argv.dcv}/docker-compose-${distribution}-${arch}`;
-    const curl = exec(`curl -L "${link}" -o ./node_modules/.bin/docker-compose`);
-
-    if (curl.code !== 0) {
-      echo(`failed to install docker-compose: ${curl.stderr}`);
-      exit(1);
-    }
-
-    compose = ShellString(path.resolve(process.cwd(), './node_modules/.bin/docker-compose'));
-    chmod('+x', compose);
-  }
+  const docker = which('docker');
+  const mutagen = which('mutagen');
+  const compose = mutagen || docker;
 
   const originalDockerCompose = argv.docker_compose;
   const dockerComposeFiles = [];
+
+  if (mutagen) {
+    argv.isMutagen = true;
+  }
 
   if (argv.docker_compose_multi.length > 0) {
     dockerComposeFiles.push(...argv.docker_compose_multi);
@@ -71,7 +48,7 @@ exports.handler = (argv) => {
   const composeFiles = dockerComposeFiles.map((x) => `-f ${x}`).join(' ');
 
   // add link to compose file
-  argv.compose = ShellString(`"${compose}" ${composeFiles}`);
+  argv.compose = ShellString(`"${compose}" compose ${composeFiles}`);
 
   function stopDocker(signal, code) {
     const dockerCompose = argv.compose;
@@ -83,7 +60,7 @@ exports.handler = (argv) => {
 
     if (argv.no_cleanup !== true) {
       echo(`\nAutomatically cleaning up after ${signal}\n`);
-      exec(`${dockerCompose} down; true`);
+      exec(`${dockerCompose} down -v --remove-orphans; true`);
 
       if (argv.auto_compose) {
         const deleteCmd = (isWin ? 'del ' : 'rm ') + argv.docker_compose;
@@ -94,7 +71,7 @@ exports.handler = (argv) => {
       // force exit now
       if (signal === 'exit') process.exit(code || 0);
     } else {
-      echo(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} down;\n`);
+      echo(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} down -v --remove-orphans;\n`);
     }
   }
 
