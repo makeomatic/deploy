@@ -3,6 +3,7 @@
  * @type {String}
  */
 
+const assert = require('assert');
 const npmPath = require('npm-path');
 const onDeath = require('death')({ SIGHUP: true, exit: true });
 const { exec, echo, which, ShellString } = require('shelljs');
@@ -16,9 +17,19 @@ exports.handler = (argv) => {
 
   // verify if we have compose or not
   const docker = which('docker');
-  const dockerCompose = which('docker-compose');
+  const dockerComposeBin = which('docker-compose');
   const mutagen = which('mutagen');
-  const compose = mutagen || dockerCompose || docker;
+
+  let compose;
+  if (mutagen) {
+    compose = `"${mutagen}" compose`;
+  } else if (dockerComposeBin) {
+    compose = dockerComposeBin;
+  } else if (docker) {
+    compose = `"${docker}" compose`;
+  } else {
+    assert.fail('docker compose not available');
+  }
 
   const originalDockerCompose = argv.docker_compose;
   const dockerComposeFiles = [];
@@ -49,7 +60,7 @@ exports.handler = (argv) => {
   const composeFiles = dockerComposeFiles.map((x) => `-f ${x}`).join(' ');
 
   // add link to compose file
-  argv.compose = ShellString(`"${compose}" compose ${composeFiles}`);
+  argv.compose = ShellString(`${compose} ${composeFiles}`);
 
   function stopDocker(signal, code) {
     const dockerCompose = argv.compose;
