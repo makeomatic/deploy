@@ -164,7 +164,7 @@ async function main() {
 
         if (key === 'prepare-commit-msg'
             && script === './node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $HUSKY_GIT_PARAMS') {
-          delete pkg.husky[key];
+          delete pkg.husky.hooks[key];
           // eslint-disable-next-line no-continue
           continue;
         }
