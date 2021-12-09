@@ -152,15 +152,32 @@ async function main() {
 
   const pkg = await getPkg();
   if (pkg.husky) {
-    for (const entry of Object.entries(pkg.husky)) {
-      const [key] = entry;
-      let [, script] = entry;
-      if (!/^yarn|np[mx] /.test(script)) {
-        script = `npx --no-install ${script}`;
+    console.log('⚠️ current husky config');
+    console.log(pkg.husky);
+
+    if (pkg.husky.hooks) {
+      for (const entry of Object.entries(pkg.husky.hooks)) {
+        const [key] = entry;
+        let [, script] = entry;
+
+        console.log('working on [%s]: %s', key, script);
+
+        if (key === 'prepare-commit-msg'
+            && script === './node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $HUSKY_GIT_PARAMS') {
+          delete pkg.husky[key];
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+
+        if (!/^(yarn|np[mx]) /.test(script)) {
+          script = `npx --no-install ${script}`;
+        }
+        pkg.husky.hooks[key] = script.replace(/\$?HUSKY_GIT_PARAMS/g, '$1');
       }
-      pkg.husky[key] = script.replace(/\$?HUSKY_GIT_PARAMS/g, '$1');
     }
 
+    console.log('⚠️ final config:');
+    console.log(pkg.husky);
     console.log('⚠️ migrating husky config');
     await savePackage(pkg);
     const { stdout } = await exec('npm', ['exec', '--', 'github:typicode/husky-4-to-7', '--remove-v4-config'], { cwd: rootDir() });

@@ -103,6 +103,9 @@ describe('test installing the package', () => {
       expect((await fs.stat('.husky/_/husky.sh')).isFile()).toBe(true);
       expect((await fs.stat('.husky/commit-msg')).isFile()).toBe(true);
       expect((await fs.stat('.husky/prepare-commit-msg')).isFile()).toBe(true);
+
+      const files = await fs.readdir('.husky');
+      expect(files.length).toBe(3);
     });
 
     test('.husky files content sane', async () => {
