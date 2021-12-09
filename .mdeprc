@@ -3,7 +3,7 @@
   "test_framework": "jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --runInBand",
   "tests": "__tests__/*.js",
   "auto_compose": true,
-  "node": "14",
+  "node": "16",
   "tester_flavour": "chrome-tester",
   "services": [
     "redisSentinel",
@@ -22,5 +22,8 @@
         "DEBUG": "${DEBUG:-''}"
       }
     }
-  }
+  },
+  "arbitrary_exec": [
+    "apk add git"
+  ]
 }
