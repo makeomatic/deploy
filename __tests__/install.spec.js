@@ -110,7 +110,7 @@ describe('test installing the package', () => {
 
     test('.husky files content sane', async () => {
       const contents = await fs.readFile('.husky/commit-msg', { encoding: 'utf8' });
-      expect(contents).toContain('npx --no-install commitlint --edit $1');
+      expect(contents).toContain('npx --no-install commitlint -e $1');
     });
   });
 

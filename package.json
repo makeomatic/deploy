@@ -79,5 +79,12 @@
   ],
   "jest": {
     "testURL": "http://tester.local"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "commit-msg": "commitlint -e $HUSKY_GIT_PARAMS",
+      "prepare-commit-msg": "./node_modules/@makeomatic/deploy/git-hooks/prepare-commit-msg $HUSKY_GIT_PARAMS"
+    }
   }
 }
