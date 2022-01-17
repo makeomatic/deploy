@@ -79,7 +79,7 @@ exports.handler = (argv) => {
  * Prepares tester declaration
  */
 function tester(compose, argv) {
-  compose.services.tester = merge({
+  const tester = merge({
     image: argv.tester_image || `makeomatic/node:${argv.node}-${argv.tester_flavour}`,
     hostname: 'tester',
     working_dir: '/src',
@@ -89,6 +89,14 @@ function tester(compose, argv) {
     },
     command: 'tail -f /dev/null',
   }, argv.extras.tester);
+  const volumes = tester.volumes.filter(volume => !volume.includes('${PWD}:/src'));
+
+  console.log(volumes, tester)
+
+  volumes.push(argv.isMutagen ? 'makeomatic-deploy-code:/src' : '${PWD}:/src');
+  tester.volumes = volumes;
+
+  compose.services.tester = tester;
 }
 
 function redisCluster(compose, argv) {
