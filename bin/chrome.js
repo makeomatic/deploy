@@ -96,7 +96,8 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
         // might fire twice with failed/finished handlers
         pino.debug(
           evicted ? 'evicted' : 'responseReceived',
-          `[pending=${protocol.pending.size}]`, originalRequest && originalRequest.request.url
+          `[pending=${protocol.pending.size}]`,
+          originalRequest && originalRequest.request.url
         );
 
         // remove request from pending
