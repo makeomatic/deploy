@@ -120,8 +120,13 @@ async function hasDir(name) {
   }
 }
 
+// if there is no directory .git it is a monorepo package
+async function isMonorepoPackage() {
+  return await hasDir('.git') === false;
+}
+
 async function main() {
-  if ((!amIaDependency() || await isInstallingGlobally()) && !isForced) {
+  if ((!amIaDependency() || await isInstallingGlobally() || await isMonorepoPackage()) && !isForced) {
     // top level install (we are running `npm i` in this project)
     debug('we are installing own dependencies');
     process.exit(0);
