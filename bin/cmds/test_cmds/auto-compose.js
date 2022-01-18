@@ -83,7 +83,6 @@ function tester(compose, argv) {
     image: argv.tester_image || `makeomatic/node:${argv.node}-${argv.tester_flavour}`,
     hostname: 'tester',
     working_dir: '/src',
-    volumes: [argv.isMutagen ? 'makeomatic-deploy-code:/src' : '${PWD}:/src'],
     environment: {
       NODE_ENV: 'test',
     },
