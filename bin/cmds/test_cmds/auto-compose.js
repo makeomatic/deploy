@@ -89,9 +89,13 @@ function tester(compose, argv) {
     },
     command: 'tail -f /dev/null',
   }, argv.extras.tester);
-  const volumes = testerConfig.volumes.filter((volume) => !volume.includes('${PWD}:/src'));
+  const workingDir = testerConfig.working_dir;
+  const workingVolume = `\${PWD}:${workingDir}`;
+  const volumes = testerConfig.volumes.filter((volume) => volume !== workingVolume);
 
-  volumes.push(argv.isMutagen ? 'makeomatic-deploy-code:/src' : '${PWD}:/src');
+  volumes.push(
+    argv.isMutagen ? `makeomatic-deploy-code:${workingDir}` : workingVolume
+  );
   testerConfig.volumes = volumes;
 
   compose.services.tester = testerConfig;
