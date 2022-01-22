@@ -89,7 +89,7 @@ function tester(compose, argv) {
       NODE_ENV: 'test',
     },
     ports: [],
-    command: argv.http ? 'node /deploy/bin/runner.js' : 'tail -f /dev/null',
+    command: 'tail -f /dev/null',
   }, argv.extras.tester);
   const workingDir = testerConfig.working_dir;
   const workingVolume = `\${PWD}:${workingDir}`;
@@ -100,7 +100,11 @@ function tester(compose, argv) {
   );
 
   if (argv.http) {
-    volumes.push(`${resolve(__dirname, '../../..')}:/deploy:cached`);
+    volumes.push(`${resolve(__dirname, '../../..')}:/deploy`);
+    volumes.push(`${resolve(__dirname, '../../..')}:/${workingDir}/node_modules/@makeomatic/deploy`);
+    if (testerConfig.command === 'tail -f /dev/null') {
+      testerConfig.command = `node ${workingDir}/node_modules/@makeomatic/deploy/bin/runner.js`;
+    }
   }
 
   testerConfig.volumes = volumes;
