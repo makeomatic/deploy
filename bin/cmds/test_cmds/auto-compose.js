@@ -6,6 +6,7 @@ const hyperid = require('hyperid');
 const merge = require('lodash.merge');
 const path = require('path');
 const { mkdir } = require('shelljs');
+const { resolve } = require('path');
 
 const SERVICE_MAP = {
   redis,
@@ -87,7 +88,8 @@ function tester(compose, argv) {
     environment: {
       NODE_ENV: 'test',
     },
-    command: 'tail -f /dev/null',
+    ports: [],
+    command: argv.http ? 'node /deploy/bin/runner.js' : 'tail -f /dev/null',
   }, argv.extras.tester);
   const workingDir = testerConfig.working_dir;
   const workingVolume = `\${PWD}:${workingDir}`;
@@ -96,6 +98,11 @@ function tester(compose, argv) {
   volumes.push(
     argv.isMutagen ? `makeomatic-deploy-code:${workingDir}` : workingVolume
   );
+
+  if (argv.http) {
+    volumes.push(`${resolve(__dirname, '../../..')}:/deploy:cached`);
+  }
+
   testerConfig.volumes = volumes;
 
   compose.services.tester = testerConfig;

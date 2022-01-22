@@ -162,6 +162,11 @@ exports.builder = (yargs) => (
       default: [],
       array: true,
     })
+    .option('http', {
+      describe: 'uses http exec instead of docker exec to run tests',
+      type: 'boolean',
+      default: true,
+    })
     .help()
 );
 exports.handler = () => {};

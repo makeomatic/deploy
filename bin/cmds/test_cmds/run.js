@@ -5,27 +5,22 @@
 const Promise = require('bluebird');
 const path = require('path');
 const glob = require('glob');
-const { exec, echo, exit } = require('shelljs');
+const execa = require('execa');
+const { echo, exit } = require('shelljs');
+const { Client } = require('undici');
+const { resolve } = require('path');
+const split = require('split2');
+const { pipeline: _pipeline, Writable } = require('stream');
+const { promisify } = require('util');
+const { deserializeError } = require('serialize-error');
 
-// to lower CPU usage
-async function execAsync(cmd) {
-  return Promise.fromCallback((next) => (
-    exec(cmd, (code, stdout, stderr) => next(null, { code, stdout, stderr }))
-  ));
-}
+const pipeline = promisify(_pipeline);
 
-async function echoAndExec(cmd) {
-  echo(cmd);
-  return execAsync(cmd);
-}
-
-async function runCommand(cmd) {
-  const results = await echoAndExec(cmd);
-  if (!results || results.code !== 0) {
-    echo(`failed to run ${cmd}, exiting 128...`);
-    exit(128);
-  }
-}
+const execAsync = (cmd, args, opts) => execa(cmd, args, opts);
+const echoAndExec = (cmd, args = [], opts = {}) => {
+  echo(cmd, args.join(' '));
+  return execAsync(cmd, args, opts);
+};
 
 function removeCommonPrefix(from, compareWith) {
   let i = 0;
@@ -54,44 +49,123 @@ exports.handler = async (argv) => {
     echo('Found %d test files', testFiles.length);
   }
 
-  const { compose } = argv;
+  const { compose, composeArgs } = argv;
 
   if (argv.pull) {
-    if (await echoAndExec(`${compose} pull`).code !== 0) {
+    if (await echoAndExec(compose, [...composeArgs, 'pull']).exitCode !== 0) {
       echo('failed pull docker containers. Exit 128');
       exit(128);
     }
   }
 
   // start containers
-  if ((await echoAndExec(`${compose} up -d`)).code !== 0) {
+  if ((await echoAndExec(compose, [...composeArgs, 'up', '-d'])).exitCode !== 0) {
     echo('failed to start docker containers. Exit 128');
     exit(128);
   }
 
-  const containerData = await echoAndExec(`${compose} ps -q tester`);
-  if (containerData.code !== 0) {
+  const containerData = await echoAndExec(compose, [...composeArgs, 'ps', '-q', 'tester']);
+  if (containerData.exitCode !== 0) {
     echo('failed to get container id. Exit 128');
     exit(128);
   }
-  const container = containerData.stdout.trim().split('\n').pop();
+  const container = containerData.stdout.split('\n').pop();
+  echo(`found container ${container}`);
+
+  /**
+   * @type {Client}
+   */
+  let client;
+  let dockerExec;
+  if (argv.http) {
+    const { stdout } = await execAsync('docker', ['logs', container]);
+    const { socketId } = JSON.parse(stdout.split('\n').pop());
+
+    client = new Client({
+      hostname: 'localhost',
+      protocol: 'http:',
+    }, {
+      socketPath: resolve(__dirname, `../../../run/${socketId}`),
+      keepAliveTimeout: 10, // milliseconds
+      keepAliveMaxTimeout: 10, // milliseconds
+    });
+
+    dockerExec = async (cmd, args, { stream = true, timeout = 0, assertCode = true } = {}) => {
+      const res = await client.request({
+        method: 'POST',
+        path: '/exec',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ file: cmd, args, timeout }),
+      });
+
+      if (res.statusCode !== 200) {
+        const resp = await res.body.text();
+        echo('failed to exec query');
+        echo(resp);
+        exit(128);
+      }
+
+      const all = [];
+      let result;
+      await pipeline(res.body, split(), new Writable({
+        write(chunk, enc, next) {
+          if (this.$chunk) {
+            if (stream) {
+              process.stdout.write(this.$chunk);
+              process.stdout.write('\n');
+            } else {
+              all.push(this.$chunk);
+            }
+          }
+
+          this.$chunk = chunk;
+          next();
+        },
+        final(next) {
+          result = JSON.parse(this.$chunk);
+          next();
+        },
+      }));
+
+      if (assertCode && result.exitCode !== 0) {
+        throw deserializeError(result);
+      }
+
+      result.all = all.join('\n');
+      return result;
+    };
+  } else {
+    dockerExec = async (cmd, args = [], { stream = true } = {}) => {
+      const command = `${cmd} ${args.join(' ')}`.trim();
+      const ex = execAsync('docker', ['exec', container, '/bin/sh', '-c', command], { buffer: !stream });
+
+      if (stream) {
+        ex.stdout.pipe(process.stdout);
+        ex.stderr.pipe(process.stderr);
+      }
+
+      return ex;
+    };
+  }
 
   // easy way to wait for containers, can do improved detection, but it's not generic
   if (argv.rebuild.length > 0) {
     echo('rebuilding modules');
     for (const mod of argv.rebuild) {
       // eslint-disable-next-line no-await-in-loop
-      await execAsync(`docker exec ${container} npm rebuild ${mod}`);
+      await dockerExec('npm', ['rebuild', mod]);
     }
   }
 
   if (argv.gyp) {
-    await execAsync(`docker exec ${container} node-gyp configure`);
-    await execAsync(`docker exec ${container} node-gyp build`);
+    await dockerExec('node-gyp', ['configure']);
+    await dockerExec('node-gyp', ['build']);
   }
 
   if (argv.sleep) {
-    await echoAndExec(`sleep ${argv.sleep}`);
+    await echoAndExec('sleep', [argv.sleep]);
   }
 
   // support argv.test_args and passed '--' args
@@ -107,7 +181,6 @@ exports.handler = async (argv) => {
   const nyc = `${argv.root}/nyc`;
   const testFramework = `${argv.root}/${argv.test_framework}`;
   const customRun = argv.custom_run ? `${argv.custom_run} ` : '';
-  const runner = `docker exec ${container} /bin/sh`;
   const testCommands = testFiles.map((test) => {
     const testName = removeCommonPrefix(test, argv.tests);
     const coverageDir = `${argv.report_dir}/${testName.substring(0, testName.lastIndexOf('.'))}`;
@@ -117,22 +190,24 @@ exports.handler = async (argv) => {
     const testBin = testFramework
       .replace('<coverageDirectory>', coverageDir);
 
-    return `${runner} -c "${customRun}${crossEnv} NODE_ENV=test ${cov} ${testBin} ${testArgs.join(' ')} ${test}"`;
+    return `${customRun}${crossEnv} NODE_ENV=test ${cov} ${testBin} ${testArgs.join(' ')} ${test}`;
   });
 
-  await Promise.map(argv.pre, runCommand);
-  await Promise.map(argv.arbitrary_exec.map((cmd) => `docker exec ${container} ${cmd}`), runCommand);
+  await Promise.map(argv.pre, (cmd) => execa.command(cmd));
+  await Promise.map(argv.arbitrary_exec, (cmd) => dockerExec(cmd));
 
   const testCmds = argv.sort
-    ? Promise.each(testCommands, runCommand)
-    : Promise.map(testCommands, runCommand, { concurrency: argv.parallel || 1 });
+    ? Promise.each(testCommands, (cmd) => dockerExec(cmd))
+    : Promise.map(testCommands, (cmd) => dockerExec(cmd), { concurrency: argv.parallel || 1 });
   await testCmds;
 
-  await Promise.map(argv.post_exec.map((cmd) => `docker exec ${container} ${cmd}`), runCommand);
+  await Promise.map(argv.post_exec, (cmd) => dockerExec(cmd));
 
   // upload codecoverage report
   if (argv.coverage) {
     // this is to avoid exposing token
-    await echoAndExec(`${argv.coverage} > /dev/null 2>1`);
+    await echoAndExec(argv.coverage, ['>', '/dev/null', '2>1']);
   }
+
+  if (client) await client.close();
 };

@@ -1,6 +1,6 @@
 const npmPath = require('npm-path');
 const onDeath = require('death')({ SIGHUP: true, exit: true });
-const { exec, echo, which, ShellString } = require('shelljs');
+const { exec, echo, which } = require('shelljs');
 
 const isWin = process.platform === 'win32';
 
@@ -13,7 +13,8 @@ exports.handler = (argv) => {
   const docker = which('docker');
   const dockerComposeBin = which('docker-compose');
   const mutagen = which('mutagen-compose');
-  const compose = mutagen || dockerComposeBin || `"${docker}" compose`;
+  const compose = mutagen || dockerComposeBin || docker;
+  const composeArgs = compose === docker ? ['compose'] : [];
   const originalDockerCompose = argv.docker_compose;
   const dockerComposeFiles = [];
 
@@ -40,13 +41,12 @@ exports.handler = (argv) => {
     dockerComposeFiles.push(originalDockerCompose);
   }
 
-  const composeFiles = dockerComposeFiles.map((x) => `-f ${x}`).join(' ');
-
   // add link to compose file
-  argv.compose = ShellString(`${compose} ${composeFiles}`);
+  argv.compose = compose.toString();
+  argv.composeArgs = [...composeArgs, ...dockerComposeFiles.flatMap((x) => ['-f', x])];
 
   function stopDocker(signal, code) {
-    const dockerCompose = argv.compose;
+    const dockerCompose = `${argv.compose} ${argv.composeArgs.join(' ')}`.trim();
 
     // allows to exec arbitrary code on exit
     if (argv.on_fail && signal === 'exit' && code !== 0) {
