@@ -167,6 +167,12 @@ exports.builder = (yargs) => (
       type: 'boolean',
       default: true,
     })
+    .option('in-one', {
+      alias: 'in_one',
+      describe: 'runs all tests in 1 test runner',
+      type: 'boolean',
+      default: false,
+    })
     .help()
 );
 exports.handler = () => {};

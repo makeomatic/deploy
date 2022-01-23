@@ -1,6 +1,6 @@
 {
   "nycCoverage": false,
-  "test_framework": "jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --runInBand",
+  "test_framework": "jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --maxWorkers=50% --verbose --colors",
   "tests": "__tests__/*.js",
   "auto_compose": true,
   "node": "16",
@@ -20,7 +20,10 @@
       "environment": {
         "CHROME_PATH": "/usr/bin/chromium-browser",
         "DEBUG": "${DEBUG:-''}"
-      }
+      },
+      "volumes": [
+        "${YARN_CACHE_FOLDER:-$HOME/.cache/yarn}:/tmp/yarn-cache:ro"
+      ]
     }
   },
   "arbitrary_exec": [

@@ -6,15 +6,24 @@ const { promisify } = require('util');
 const set = require('lodash.set');
 const stripEOF = require('strip-final-newline');
 const fs = require('fs/promises');
+const debug = require('debug')('test');
 const execFile = promisify(require('child_process').execFile);
 
 describe('test installing the package', () => {
   const kFilename = 'deploy.tgz';
   const cwd = process.cwd();
   const tarball = resolve(cwd, kFilename);
+  const clean = async () => {
+    try {
+      await fs.rm(tarball);
+    } catch (e) {
+      process.stderr.write(`nothing to cleanup ~ ${tarball}\n`);
+    }
+  };
 
   beforeAll(async () => {
-    await execFile('yarn', ['cache', 'clean']);
+    await clean();
+    await execFile('yarn', ['config', 'set', 'cache-folder', '/tmp/yarn-cache']);
     const { stdout } = await execFile('yarn', ['pack', '--filename', kFilename]);
     console.info(stdout);
   });
@@ -23,14 +32,14 @@ describe('test installing the package', () => {
     const tmpDir = directory();
 
     beforeAll(async () => {
-      console.info('changing to %s', tmpDir);
+      debug('changing to %s', tmpDir);
       process.chdir(tmpDir);
       await execFile('yarn', ['init', '-yp']);
       await execFile('git', ['init']);
     });
 
     test('is able to install package locally', async () => {
-      await execFile('yarn', ['add', tarball]);
+      await execFile('yarn', ['add', tarball, '--offline', '--no-lockfile']);
     }, 240000);
 
     test('returns node version', async () => {
@@ -60,8 +69,8 @@ describe('test installing the package', () => {
       expect.assertions(1);
 
       await fs.writeFile('.releaserc.json', 'overwrite');
-      const { stderr } = await execFile('yarn', ['add', tarball]);
-      console.info(stderr);
+      const { stderr } = await execFile('yarn', ['add', tarball, '--offline', '--no-lockfile']);
+      debug(stderr);
       await expect(fs.readFile('.releaserc.json', 'utf8')).resolves.toBe('overwrite');
     }, 240000);
 
@@ -69,7 +78,7 @@ describe('test installing the package', () => {
       expect.assertions(1);
 
       await fs.writeFile('.commitlintrc.js', 'overwrite');
-      await execFile('yarn', ['add', tarball]);
+      await execFile('yarn', ['add', tarball, '--offline', '--no-lockfile']);
       await expect(fs.readFile('.commitlintrc.js', 'utf8')).resolves.toBe('overwrite');
     }, 240000);
   });
@@ -78,7 +87,7 @@ describe('test installing the package', () => {
     const tmpDir = directory();
 
     beforeAll(async () => {
-      console.info('changing to %s', tmpDir);
+      debug('changing to %s', tmpDir);
       process.chdir(tmpDir);
       await execFile('yarn', ['init', '-yp']);
       await execFile('git', ['init']);
@@ -90,7 +99,7 @@ describe('test installing the package', () => {
     });
 
     test('is able to install package locally', async () => {
-      await execFile('yarn', ['add', tarball]);
+      await execFile('yarn', ['add', tarball, '--offline', '--no-lockfile']);
     }, 240000);
 
     test('package.json enhanced, no husky', async () => {
@@ -116,7 +125,7 @@ describe('test installing the package', () => {
 
   describe('installs globally', () => {
     test('is able to install package globally', async () => {
-      await execFile('yarn', ['global', 'add', tarball]);
+      await execFile('yarn', ['global', 'add', tarball, '--offline', '--no-lockfile']);
     }, 240000);
 
     test('returns current node version in module', async () => {
@@ -126,11 +135,5 @@ describe('test installing the package', () => {
     });
   });
 
-  afterAll(async () => {
-    try {
-      await fs.rm(kFilename);
-    } catch (e) {
-      process.stderr.write(`nothing to cleanup ~ ${kFilename}\n`);
-    }
-  });
+  afterAll(clean);
 });

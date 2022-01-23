@@ -15,6 +15,7 @@ const { promisify } = require('util');
 const { deserializeError } = require('serialize-error');
 
 const pipeline = promisify(_pipeline);
+const debug = require('debug')('test');
 
 const execAsync = (cmd, args, opts) => execa(cmd, args, opts);
 const echoAndExec = (cmd, args = [], opts = {}) => {
@@ -88,16 +89,20 @@ exports.handler = async (argv) => {
       socketPath: resolve(__dirname, `../../../run/${socketId}`),
       keepAliveTimeout: 10, // milliseconds
       keepAliveMaxTimeout: 10, // milliseconds
+      headersTimeout: 0,
+      bodyTimeout: 0,
     });
 
     dockerExec = async (cmd, args, { stream = true, timeout = 0, assertCode = true } = {}) => {
+      const body = JSON.stringify({ file: cmd, args, timeout });
+      debug(body);
       const res = await client.request({
         method: 'POST',
         path: '/exec',
         headers: {
           'content-type': 'application/json',
         },
-        body: JSON.stringify({ file: cmd, args, timeout }),
+        body,
       });
 
       if (res.statusCode !== 200) {
@@ -180,25 +185,40 @@ exports.handler = async (argv) => {
   const crossEnv = `${argv.root}/cross-env`;
   const nyc = `${argv.root}/nyc`;
   const testFramework = `${argv.root}/${argv.test_framework}`;
-  const customRun = argv.custom_run ? `${argv.custom_run} ` : '';
-  const testCommands = testFiles.map((test) => {
-    const testName = removeCommonPrefix(test, argv.tests);
-    const coverageDir = `${argv.report_dir}/${testName.substring(0, testName.lastIndexOf('.'))}`;
-    const nycReportDir = argv.nycReport ? ` --report-dir ${coverageDir}` : '';
-    const cov = argv.nycCoverage ? `${nyc}${nycReportDir}` : '';
+  const customRun = argv.custom_run ? [argv.custom_run] : [];
+
+  let testCommands;
+  if (argv.in_one) {
+    const coverageDir = argv.report_dir;
+    const nycReportDir = argv.nycReport ? ['--report-dir', coverageDir] : [];
+    const cov = argv.nycCoverage ? [nyc, ...nycReportDir] : [];
     // somewhat of a hack for jest test coverage
     const testBin = testFramework
-      .replace('<coverageDirectory>', coverageDir);
+      .replace('<coverageDirectory>', coverageDir)
+      .split(' ');
 
-    return `${customRun}${crossEnv} NODE_ENV=test ${cov} ${testBin} ${testArgs.join(' ')} ${test}`;
-  });
+    testCommands = [[...customRun, crossEnv, 'NODE_ENV=test', ...cov, ...testBin, ...testArgs, ...testFiles]];
+  } else {
+    testCommands = testFiles.map((test) => {
+      const testName = removeCommonPrefix(test, argv.tests);
+      const coverageDir = `${argv.report_dir}/${testName.substring(0, testName.lastIndexOf('.'))}`;
+      const nycReportDir = argv.nycReport ? ['--report-dir', coverageDir] : [];
+      const cov = argv.nycCoverage ? [nyc, ...nycReportDir] : [];
+      // somewhat of a hack for jest test coverage
+      const testBin = testFramework
+        .replace('<coverageDirectory>', coverageDir)
+        .split(' ');
+
+      return [...customRun, crossEnv, 'NODE_ENV=test', ...cov, ...testBin, ...testArgs, test];
+    });
+  }
 
   await Promise.map(argv.pre, (cmd) => execa.command(cmd));
-  await Promise.map(argv.arbitrary_exec, (cmd) => dockerExec(cmd));
+  await Promise.map(argv.arbitrary_exec, (cmd) => dockerExec(cmd, undefined));
 
   const testCmds = argv.sort
-    ? Promise.each(testCommands, (cmd) => dockerExec(cmd))
-    : Promise.map(testCommands, (cmd) => dockerExec(cmd), { concurrency: argv.parallel || 1 });
+    ? Promise.each(testCommands, ([cmd, ...args]) => dockerExec(cmd, args))
+    : Promise.map(testCommands, ([cmd, ...args]) => dockerExec(cmd, args), { concurrency: argv.parallel || 1 });
   await testCmds;
 
   await Promise.map(argv.post_exec, (cmd) => dockerExec(cmd));
