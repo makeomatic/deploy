@@ -76,6 +76,7 @@
   },
   "files": [
     "bin/",
+    "run/",
     "templates/",
     "scripts/",
     ".husky/*",
