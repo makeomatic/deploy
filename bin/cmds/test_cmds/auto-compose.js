@@ -101,7 +101,7 @@ function tester(compose, argv) {
 
   if (argv.http) {
     volumes.push(`${resolve(__dirname, '../../..')}:/deploy`);
-    volumes.push(`${resolve(__dirname, '../../..')}:/${workingDir}/node_modules/@makeomatic/deploy`);
+    volumes.push(`${resolve(__dirname, '../../..')}:${workingDir}/node_modules/@makeomatic/deploy`);
     if (testerConfig.command === 'tail -f /dev/null') {
       testerConfig.command = `node ${workingDir}/node_modules/@makeomatic/deploy/bin/runner.js`;
     }
