@@ -24,6 +24,7 @@ describe('test installing the package', () => {
   beforeAll(async () => {
     await clean();
     await execFile('yarn', ['config', 'set', 'preferred-cache-folder', '/tmp/yarn-cache']);
+    await execFile('yarn', ['config', 'set', 'cache-folder', '/tmp/yarn-cache-internal']);
     await execFile('yarn', ['config', 'set', 'prefer-offline', 'true']);
     const { stdout } = await execFile('yarn', ['pack', '--filename', kFilename]);
     console.info(stdout);
@@ -40,7 +41,7 @@ describe('test installing the package', () => {
     });
 
     test('is able to install package locally', async () => {
-      await execFile('yarn', ['add', tarball, '--offline', '--no-lockfile']);
+      await execFile('yarn', ['add', tarball, '--no-lockfile']);
     }, 240000);
 
     test('returns node version', async () => {
@@ -70,7 +71,7 @@ describe('test installing the package', () => {
       expect.assertions(1);
 
       await fs.writeFile('.releaserc.json', 'overwrite');
-      const { stderr } = await execFile('yarn', ['add', tarball, '--offline', '--no-lockfile']);
+      const { stderr } = await execFile('yarn', ['add', tarball, '--no-lockfile']);
       debug(stderr);
       await expect(fs.readFile('.releaserc.json', 'utf8')).resolves.toBe('overwrite');
     }, 240000);
@@ -79,7 +80,7 @@ describe('test installing the package', () => {
       expect.assertions(1);
 
       await fs.writeFile('.commitlintrc.js', 'overwrite');
-      await execFile('yarn', ['add', tarball, '--offline', '--no-lockfile']);
+      await execFile('yarn', ['add', tarball, '--no-lockfile']);
       await expect(fs.readFile('.commitlintrc.js', 'utf8')).resolves.toBe('overwrite');
     }, 240000);
   });
@@ -100,7 +101,7 @@ describe('test installing the package', () => {
     });
 
     test('is able to install package locally', async () => {
-      await execFile('yarn', ['add', tarball, '--offline', '--no-lockfile']);
+      await execFile('yarn', ['add', tarball, '--no-lockfile']);
     }, 240000);
 
     test('package.json enhanced, no husky', async () => {
@@ -126,7 +127,7 @@ describe('test installing the package', () => {
 
   describe('installs globally', () => {
     test('is able to install package globally', async () => {
-      await execFile('yarn', ['global', 'add', tarball, '--offline', '--no-lockfile']);
+      await execFile('yarn', ['global', 'add', tarball, '--no-lockfile']);
     }, 240000);
 
     test('returns current node version in module', async () => {
