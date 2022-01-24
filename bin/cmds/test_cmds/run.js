@@ -83,8 +83,18 @@ exports.handler = async (argv) => {
   let client;
   let dockerExec;
   if (argv.http) {
-    const { stdout } = await execAsync('docker', ['logs', container]);
-    const { socketId } = JSON.parse(stdout.split('\n').pop());
+    const getSocketId = async (attempt = 0) => {
+      try {
+        const { stdout } = await execAsync('docker', ['logs', container]);
+        return JSON.parse(stdout.split('\n').pop()).socketId;
+      } catch (e) {
+        if (attempt > 10) throw e;
+        await new Promise((resolve) => setTimeout(resolve, 500));
+        return getSocketId(attempt + 1);
+      }
+    };
+
+    const socketId = await getSocketId();
 
     client = new Client({
       hostname: 'localhost',
