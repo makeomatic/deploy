@@ -72,7 +72,8 @@
     "yargs": "^17.3.0"
   },
   "bin": {
-    "mdep": "./bin/cli.js"
+    "mdep": "./bin/cli.js",
+    "mdep-runner": "./bin/runner.js"
   },
   "files": [
     "bin/",

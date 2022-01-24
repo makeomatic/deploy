@@ -6,7 +6,6 @@ const Fastify = require('fastify');
 const { Type } = require('@sinclair/typebox');
 const execa = require('execa');
 const { serializeError } = require('serialize-error');
-const { resolve, relative } = require('path');
 const id = require('hyperid')({ urlSafe: true });
 const logger = require('pino')();
 
@@ -53,7 +52,7 @@ fastify.post('/exec', { schema: { body: Command } }, async (request, reply) => {
 // Run the server!
 const sockId = id();
 const opts = {
-  path: relative(process.cwd(), resolve(__dirname, `../run/fastify.${sockId}.sock`)),
+  path: `/var/run/fastify.${sockId}.sock`,
   readableAll: true,
   writableAll: true,
 };

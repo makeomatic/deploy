@@ -1,14 +1,14 @@
 /**
  * Builds docker images
  */
-
+const os = require('os');
 const Promise = require('bluebird');
 const path = require('path');
 const glob = require('glob');
 const execa = require('execa');
 const { echo, exit } = require('shelljs');
 const { Client } = require('undici');
-const { resolve } = require('path');
+// const { resolve } = require('path');
 const split = require('split2');
 const { pipeline: _pipeline, Writable } = require('stream');
 const { promisify } = require('util');
@@ -90,7 +90,8 @@ exports.handler = async (argv) => {
       hostname: 'localhost',
       protocol: 'http:',
     }, {
-      socketPath: resolve(__dirname, `../../../run/${socketId}`),
+
+      socketPath: `${os.homedir()}/.local/share/mdep-runner/${socketId}`,
       keepAliveTimeout: 10, // milliseconds
       keepAliveMaxTimeout: 10, // milliseconds
       headersTimeout: 0,
