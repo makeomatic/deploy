@@ -23,7 +23,8 @@ describe('test installing the package', () => {
 
   beforeAll(async () => {
     await clean();
-    await execFile('yarn', ['config', 'set', 'cache-folder', '/tmp/yarn-cache']);
+    await execFile('yarn', ['config', 'set', 'preferred-cache-folder', '/tmp/yarn-cache']);
+    await execFile('yarn', ['config', 'set', 'prefer-offline', 'true']);
     const { stdout } = await execFile('yarn', ['pack', '--filename', kFilename]);
     console.info(stdout);
   });

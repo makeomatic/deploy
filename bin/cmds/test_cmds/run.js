@@ -18,9 +18,13 @@ const pipeline = promisify(_pipeline);
 const debug = require('debug')('test');
 
 const execAsync = (cmd, args, opts) => execa(cmd, args, opts);
-const echoAndExec = (cmd, args = [], opts = {}) => {
-  echo(cmd, args.join(' '));
-  return execAsync(cmd, args, opts);
+const echoAndExec = (cmd, args = [], { buffer = false, all = true, ...rest } = {}) => {
+  echo(cmd, ...args);
+  const exe = execAsync(cmd, args, { buffer, all, ...rest });
+  if (!buffer && all) {
+    exe.all.pipe(process.stdout);
+  }
+  return exe;
 };
 
 function removeCommonPrefix(from, compareWith) {
@@ -53,7 +57,7 @@ exports.handler = async (argv) => {
   const { compose, composeArgs } = argv;
 
   if (argv.pull) {
-    if (await echoAndExec(compose, [...composeArgs, 'pull']).exitCode !== 0) {
+    if ((await echoAndExec(compose, [...composeArgs, 'pull'])).exitCode !== 0) {
       echo('failed pull docker containers. Exit 128');
       exit(128);
     }
@@ -65,7 +69,7 @@ exports.handler = async (argv) => {
     exit(128);
   }
 
-  const containerData = await echoAndExec(compose, [...composeArgs, 'ps', '-q', 'tester']);
+  const containerData = await echoAndExec(compose, [...composeArgs, 'ps', '-q', 'tester'], { buffer: true });
   if (containerData.exitCode !== 0) {
     echo('failed to get container id. Exit 128');
     exit(128);
