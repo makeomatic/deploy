@@ -107,6 +107,14 @@ function tester(compose, argv) {
     }
   }
 
+  if (argv.services.includes('redisCluster')) {
+    const cmdWait = process.env.DEPLOY_CLUSTER_SCRIPT || '/deploy-scripts/wait-for-cluster.sh';
+    volumes.push(
+      `${resolve(__dirname, '../../../scripts/wait-for-cluster.sh')}:${cmdWait}`
+    );
+    testerConfig.command = `${cmdWait} ${testerConfig.command}`;
+  }
+
   testerConfig.volumes = volumes;
 
   compose.services.tester = testerConfig;
