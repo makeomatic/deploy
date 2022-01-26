@@ -3,16 +3,13 @@
 /* eslint-disable no-console, no-await-in-loop */
 
 const Promise = require('bluebird');
-const util = require('util');
 const debug = require('debug')('makeomatic:deploy');
 const path = require('path');
 const get = require('lodash.get');
 const set = require('lodash.set');
 const fs = require('fs/promises');
-const childProcess = require('child_process');
-const stripEOF = require('strip-final-newline');
+const exec = require('execa');
 
-const exec = util.promisify(childProcess.execFile);
 const isForced = process.argv.some((a) => a === '--force');
 
 function amIaDependency() {
@@ -26,7 +23,7 @@ function amIaDependency() {
 }
 
 function rootDir() {
-  return path.resolve(process.cwd(), '../../..');
+  return process.env.INIT_CWD || process.env.PWD;
 }
 
 function clientPackageJsonFilename() {
@@ -36,7 +33,7 @@ function clientPackageJsonFilename() {
 async function yarnGlobalDir() {
   try {
     const { stdout } = await exec('yarn', ['global', 'dir']);
-    return stripEOF(stdout);
+    return stdout;
   } catch (e) {
     return null;
   }
@@ -45,7 +42,16 @@ async function yarnGlobalDir() {
 async function npmGlobalDir() {
   try {
     const { stdout } = await exec('npm', ['-g', 'root']);
-    return path.resolve(stripEOF(stdout), '../');
+    return path.resolve(stdout, '../');
+  } catch (e) {
+    return null;
+  }
+}
+
+async function pnpmGlobalDir() {
+  try {
+    const { stdout } = await exec('pnpm', ['-g', 'root']);
+    return path.resolve(stdout, '../');
   } catch (e) {
     return null;
   }
@@ -55,6 +61,7 @@ async function isInstallingGlobally() {
   const globalDirs = await Promise.all([
     yarnGlobalDir(),
     npmGlobalDir(),
+    pnpmGlobalDir(),
   ]);
 
   debug('looking in %o for %o', globalDirs, rootDir());
@@ -150,7 +157,7 @@ async function main() {
 
   if (!(await hasDir('.husky'))) {
     console.log('⚠️ husky not initialized yet');
-    const { stdout } = await exec('yarn', ['husky', 'install'], { cwd: rootDir() });
+    const { stdout } = await exec(path.resolve(__dirname, '../node_modules/.bin/husky'), ['install'], { cwd: rootDir() });
     console.log('✅  husky initialized:');
     console.log(stdout);
   }

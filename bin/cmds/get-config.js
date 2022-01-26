@@ -1,4 +1,4 @@
-const { get } = require('lodash');
+const get = require('lodash.get');
 
 exports.command = 'get-config [path]';
 exports.desc = 'return mdeprc properties';

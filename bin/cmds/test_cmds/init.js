@@ -5,7 +5,8 @@
 
 const path = require('path');
 const fs = require('fs');
-const { get, set } = require('lodash');
+const get = require('lodash.get');
+const set = require('lodash.set');
 const { cp, test } = require('shelljs');
 
 exports.command = 'init';

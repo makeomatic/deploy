@@ -8,11 +8,11 @@ const glob = require('glob');
 const execa = require('execa');
 const { echo, exit } = require('shelljs');
 const { Client } = require('undici');
-// const { resolve } = require('path');
 const split = require('split2');
 const { pipeline: _pipeline, Writable } = require('stream');
 const { promisify } = require('util');
 const { deserializeError } = require('serialize-error');
+const assert = require('assert');
 
 const pipeline = promisify(_pipeline);
 const debug = require('debug')('test');
@@ -84,14 +84,25 @@ exports.handler = async (argv) => {
   let dockerExec;
   if (argv.http) {
     const getSocketId = async (attempt = 0) => {
-      try {
-        const { stdout } = await execAsync('docker', ['logs', container]);
-        return JSON.parse(stdout.split('\n').pop()).socketId;
-      } catch (e) {
-        if (attempt > 10) throw e;
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        return getSocketId(attempt + 1);
+      const { stdout } = await execAsync('docker', ['logs', container]);
+      const lines = stdout.split('\n');
+
+      let line;
+      // eslint-disable-next-line no-cond-assign
+      while ((line = lines.pop()) !== undefined) {
+        try {
+          const { socketId } = JSON.parse(line);
+          assert(socketId);
+          return socketId;
+        } catch (e) {
+          // ignore line, check previous
+        }
       }
+
+      if (attempt > 20) throw new Error('cant get socket id after 20s');
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return getSocketId(attempt + 1);
     };
 
     const socketId = await getSocketId();

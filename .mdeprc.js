@@ -1,8 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 const execa = require('execa');
 
-const yarnCache = execa.commandSync('yarn cache dir').stdout;
-
 module.exports = {
   nycCoverage: false,
   test_framework: 'jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --maxWorkers=50% --verbose --colors',
@@ -27,12 +25,10 @@ module.exports = {
         CHROME_PATH: '/usr/bin/chromium-browser',
         DEBUG: "${DEBUG:-''}",
       },
-      volumes: [
-        `${yarnCache}:/tmp/yarn-cache/v6:ro`,
-      ],
     },
   },
   arbitrary_exec: [
-    'apk add git',
+    'apk add git curl',
+    'npm i --global pnpm@6'
   ],
 };
