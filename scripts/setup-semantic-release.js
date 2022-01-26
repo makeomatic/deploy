@@ -69,10 +69,10 @@ async function isInstallingGlobally() {
   return globalDirs.includes(rootDir());
 }
 
-async function copyConfiguration(filename, _fallback = []) {
+async function copyConfiguration(filename, _fallback = [], renameTo = filename) {
   const names = Array.isArray(_fallback) ? [filename].concat(_fallback) : [filename];
   const prefix = rootDir();
-  const rcpath = path.join(prefix, filename);
+  const rcpath = path.join(prefix, renameTo);
 
   for (const name of names) {
     try {
@@ -181,6 +181,13 @@ async function main() {
           continue;
         }
 
+        if (key === 'commit-msg'
+           && script === 'commitlint -e $HUSKY_GIT_PARAMS') {
+          delete pkg.husky.hooks[key];
+          // eslint-disable-next-line no-continue
+          continue;
+        }
+
         if (!/^(yarn|np[mx]) /.test(script)) {
           script = `npx --no-install ${script}`;
         }
@@ -197,7 +204,7 @@ async function main() {
     console.log(stdout);
   }
 
-  await copyConfiguration('.husky/commit-msg');
+  await copyConfiguration('.husky/commit-msg.sample', [], '.husky/commit-msg');
   await copyConfiguration('.husky/prepare-commit-msg');
 
   console.log('⚠️ Use "semantic-release-cli setup" to complete setting up semantic-release');

@@ -7,6 +7,12 @@ const fs = require('fs/promises');
 const debug = require('debug')('test');
 const execa = require('execa');
 
+// setup git so that we can try commits
+beforeAll(async () => {
+  await execa.command('git config --global user.name deploy-tests');
+  await execa.command('git config --global user.email ci@github.com');
+});
+
 describe('(yarn) test installing the package', () => {
   const kFilename = 'deploy-yarn.tgz';
   const cwd = process.cwd();
@@ -120,7 +126,14 @@ describe('(yarn) test installing the package', () => {
 
     test('.husky files content sane', async () => {
       const contents = await fs.readFile('.husky/commit-msg', { encoding: 'utf8' });
-      expect(contents).toContain('npx --no-install commitlint -e $1');
+      expect(contents).toContain('"$(npm x mdep bin commitlint)" --edit $1');
+    });
+
+    test('able to commit with hooks installed', async () => {
+      await fs.writeFile('.gitignore', 'node_modules\n');
+      await execa('git', ['add', '.']);
+      await expect(execa('git', ['commit', '-m', 'wrong message'])).rejects.toThrow('subject may not be empty');
+      await execa('git', ['commit', '-m', 'chore(test): correct message']);
     });
   });
 
@@ -267,7 +280,7 @@ describe('(pnpm) test installing the package', () => {
 
     test('.husky files content sane', async () => {
       const contents = await fs.readFile('.husky/commit-msg', { encoding: 'utf8' });
-      expect(contents).toContain('npx --no-install commitlint -e $1');
+      expect(contents).toContain('"$(npm x mdep bin commitlint)" --edit $1');
     });
   });
 

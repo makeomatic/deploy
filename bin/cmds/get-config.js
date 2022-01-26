@@ -2,8 +2,8 @@ const get = require('lodash.get');
 
 exports.command = 'get-config [path]';
 exports.desc = 'return mdeprc properties';
-exports.builder = async (yargs) => {
-  yargs
+exports.builder = (yargs) => {
+  return yargs
     .positional('path', {
       describe: 'path in config',
       type: 'string',
