@@ -82,7 +82,7 @@ exports.handler = async (argv) => {
    */
   let client;
   let dockerExec;
-  if (argv.http) {
+  if (argv.auto_compose && argv.http) {
     const getSocketId = async (attempt = 0) => {
       const { stdout } = await execAsync('docker', ['logs', container]);
       const lines = stdout.split('\n');
