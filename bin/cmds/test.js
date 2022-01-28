@@ -167,6 +167,16 @@ exports.builder = (yargs) => (
       type: 'boolean',
       default: false,
     })
+    .option('exec-user', {
+      alias: 'euser',
+      describe: 'user to run setup commands with',
+      type: 'string',
+    })
+    .option('test-user', {
+      alias: 'tuser',
+      describe: 'user to run test commands with',
+      type: 'string',
+    })
     .option('in-one', {
       alias: 'in_one',
       describe: 'runs all tests in 1 test runner',

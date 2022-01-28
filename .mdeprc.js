@@ -1,5 +1,4 @@
 /* eslint-disable no-template-curly-in-string */
-const execa = require('execa');
 
 module.exports = {
   nycCoverage: false,
@@ -27,8 +26,10 @@ module.exports = {
       },
     },
   },
+  euser: 'root',
+  tuser: 'node',
   arbitrary_exec: [
     'apk add git curl',
-    'npm i --global pnpm@6'
+    'wget -qO- https://get.pnpm.io/v6.16.js | node - add --global pnpm',
   ],
 };

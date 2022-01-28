@@ -119,8 +119,8 @@ exports.handler = async (argv) => {
       bodyTimeout: 0,
     });
 
-    dockerExec = async (cmd, args, { stream = true, timeout = 0, assertCode = true } = {}) => {
-      const body = JSON.stringify({ file: cmd, args, timeout });
+    dockerExec = async (cmd, args, { stream = true, timeout = 0, assertCode = true, user } = {}) => {
+      const body = JSON.stringify({ file: cmd, args, timeout, user });
       debug(body);
       const res = await client.request({
         method: 'POST',
@@ -168,9 +168,11 @@ exports.handler = async (argv) => {
       return result;
     };
   } else {
-    dockerExec = async (cmd, args = [], { stream = true } = {}) => {
+    dockerExec = async (cmd, args = [], { stream = true, user } = {}) => {
       const command = `${cmd} ${args.join(' ')}`.trim();
-      const ex = execAsync('docker', ['exec', container, '/bin/sh', '-c', command], { buffer: !stream });
+      const argOpts = user ? ['--user', user] : [];
+      debug(command);
+      const ex = execAsync('docker', ['exec', ...argOpts, container, '/bin/sh', '-c', command], { buffer: !stream });
 
       if (stream) {
         ex.stdout.pipe(process.stdout);
@@ -186,13 +188,13 @@ exports.handler = async (argv) => {
     echo('rebuilding modules');
     for (const mod of argv.rebuild) {
       // eslint-disable-next-line no-await-in-loop
-      await dockerExec('npm', ['rebuild', mod]);
+      await dockerExec('npm', ['rebuild', mod], { user: argv.euser });
     }
   }
 
   if (argv.gyp) {
-    await dockerExec('node-gyp', ['configure']);
-    await dockerExec('node-gyp', ['build']);
+    await dockerExec('node-gyp', ['configure'], { user: argv.euser });
+    await dockerExec('node-gyp', ['build'], { user: argv.euser });
   }
 
   if (argv.sleep) {
@@ -240,14 +242,14 @@ exports.handler = async (argv) => {
   }
 
   await Promise.map(argv.pre, (cmd) => execa.command(cmd));
-  await Promise.map(argv.arbitrary_exec, (cmd) => dockerExec(cmd, undefined));
+  await Promise.map(argv.arbitrary_exec, (cmd) => dockerExec(cmd, undefined, { user: argv.euser }));
 
   const testCmds = argv.sort
-    ? Promise.each(testCommands, ([cmd, ...args]) => dockerExec(cmd, args))
-    : Promise.map(testCommands, ([cmd, ...args]) => dockerExec(cmd, args), { concurrency: argv.parallel || 1 });
+    ? Promise.each(testCommands, ([cmd, ...args]) => dockerExec(cmd, args, { user: argv.tuser }))
+    : Promise.map(testCommands, ([cmd, ...args]) => dockerExec(cmd, args), { user: argv.tuser, concurrency: argv.parallel || 1 });
   await testCmds;
 
-  await Promise.map(argv.post_exec, (cmd) => dockerExec(cmd));
+  await Promise.map(argv.post_exec, (cmd) => dockerExec(cmd, undefined, { user: argv.euser }));
 
   // upload codecoverage report
   if (argv.coverage) {

@@ -13,6 +13,7 @@ const Command = Type.Object({
   file: Type.String(),
   args: Type.Optional(Type.Array(Type.String({ minLength: 1 }))),
   timeout: Type.Optional(Type.Number({ default: 0 })),
+  user: Type.Optional(Type.String()),
 });
 
 const fastify = Fastify({
@@ -21,11 +22,23 @@ const fastify = Fastify({
 
 fastify.register(require('fastify-compress'));
 
+const uidCache = Object.create(null);
+const hasOwnProperty = Object.prototype.hasOwnProperty.bind(uidCache);
+
 fastify.post('/exec', { schema: { body: Command } }, async (request, reply) => {
-  const { file, args, timeout } = request.body;
+  const { file, args, timeout, user } = request.body;
+  const opts = { all: true, buffer: false, timeout };
+
+  if (user) {
+    if (!hasOwnProperty(user)) {
+      uidCache[user] = (await execa('id', ['-u', user])).stdout;
+    }
+    opts.user = uidCache[user];
+  }
+
   const subprocess = args
-    ? execa(file, args, { all: true, buffer: false, timeout })
-    : execa.command(file, { all: true, buffer: false, timeout });
+    ? execa(file, args, opts)
+    : execa.command(file, opts);
 
   reply.type('text/plain');
 
