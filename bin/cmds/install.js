@@ -8,3 +8,8 @@ exports.handler = async () => {
   proc.all.pipe(process.stdout);
   await proc;
 };
+exports.builder = (yargs) => {
+  return yargs
+    .strict(false)
+    .help();
+};
