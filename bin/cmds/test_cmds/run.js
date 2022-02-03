@@ -4,7 +4,7 @@
 const os = require('os');
 const Promise = require('bluebird');
 const path = require('path');
-const glob = require('glob');
+const _glob = require('glob');
 const execa = require('execa');
 const { echo, exit } = require('shelljs');
 const { Client } = require('undici');
@@ -14,6 +14,7 @@ const { promisify } = require('util');
 const { deserializeError } = require('serialize-error');
 const assert = require('assert');
 
+const glob = promisify(_glob);
 const pipeline = promisify(_pipeline);
 const debug = require('debug')('test');
 
@@ -43,10 +44,10 @@ function removeCommonPrefix(from, compareWith) {
 exports.command = 'run';
 exports.desc = 'performs testing';
 exports.handler = async (argv) => {
-  require('./compose').handler(argv);
+  await require('./compose').handler(argv);
 
   // now that we have compose get tests
-  const testFiles = glob.sync(argv.tests).sort();
+  const testFiles = (await glob(argv.tests)).sort();
   if (testFiles.length === 0) {
     echo('No test files found. Exit 1');
     exit(1);
@@ -77,35 +78,35 @@ exports.handler = async (argv) => {
   const container = containerData.stdout.split('\n').pop();
   echo(`found container ${container}`);
 
+  const getField = async (field, attempt = 0) => {
+    const { stdout } = await execAsync('docker', ['logs', container]);
+    const lines = stdout.split('\n');
+
+    let line;
+    // eslint-disable-next-line no-cond-assign
+    while ((line = lines.pop()) !== undefined) {
+      try {
+        const data = JSON.parse(line)[field];
+        assert(data);
+        return data;
+      } catch (e) {
+        // ignore line, check previous
+      }
+    }
+
+    if (attempt > 20) throw new Error(`cant get "${field}" id after 20s`);
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return getField(attempt + 1);
+  };
+
   /**
    * @type {Client}
    */
   let client;
   let dockerExec;
   if (argv.auto_compose && argv.http) {
-    const getSocketId = async (attempt = 0) => {
-      const { stdout } = await execAsync('docker', ['logs', container]);
-      const lines = stdout.split('\n');
-
-      let line;
-      // eslint-disable-next-line no-cond-assign
-      while ((line = lines.pop()) !== undefined) {
-        try {
-          const { socketId } = JSON.parse(line);
-          assert(socketId);
-          return socketId;
-        } catch (e) {
-          // ignore line, check previous
-        }
-      }
-
-      if (attempt > 20) throw new Error('cant get socket id after 20s');
-
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      return getSocketId(attempt + 1);
-    };
-
-    const socketId = await getSocketId();
+    const socketId = await getField('socketId');
 
     client = new Client({
       hostname: 'localhost',
@@ -168,6 +169,10 @@ exports.handler = async (argv) => {
       return result;
     };
   } else {
+    if (argv.auto_compose) {
+      await getField('ready');
+    }
+
     dockerExec = async (cmd, args = [], { stream = true, user } = {}) => {
       const command = `${cmd} ${args.join(' ')}`.trim();
       const argOpts = user ? ['--user', user] : [];

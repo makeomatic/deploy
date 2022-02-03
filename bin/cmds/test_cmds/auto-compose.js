@@ -1,11 +1,10 @@
 /* eslint-disable no-use-before-define, no-template-curly-in-string */
 const jsYaml = require('js-yaml');
 const os = require('os');
-const fs = require('fs');
+const fs = require('fs/promises');
 const hyperid = require('hyperid');
 const merge = require('lodash.merge');
 const path = require('path');
-const { mkdir } = require('shelljs');
 const { resolve } = require('path');
 
 const SERVICE_MAP = {
@@ -22,7 +21,7 @@ const SERVICE_MAP = {
 exports.SERVICE_MAP = SERVICE_MAP;
 exports.command = 'compose';
 exports.desc = 'prepares docker-compose file based on config';
-exports.handler = (argv) => {
+exports.handler = async (argv) => {
   const getId = hyperid({ fixedLength: true, urlSafe: true });
 
   // Header of the file
@@ -61,7 +60,7 @@ exports.handler = (argv) => {
   }
 
   // add default tester service
-  tester(compose, argv);
+  await tester(compose, argv);
 
   // finalize and push out to tmp
   const dir = os.tmpdir();
@@ -69,8 +68,8 @@ exports.handler = (argv) => {
   const location = [dir, argv.project, filename].join(path.sep);
 
   // write out the file, ensure dir exists
-  mkdir(`${dir}/${argv.project}`);
-  fs.writeFileSync(location, jsYaml.dump(compose));
+  await fs.mkdir(`${dir}/${argv.project}`, { recursive: true, mode: 0o0770 });
+  await fs.writeFile(location, jsYaml.dump(compose));
 
   // rewrite location of docker-compose
   argv.docker_compose = location;
@@ -79,17 +78,21 @@ exports.handler = (argv) => {
 /**
  * Prepares tester declaration
  */
-function tester(compose, argv) {
+async function tester(compose, argv) {
+  const socketDir = resolve('~/.local/share/mdep-runner');
+  // eslint-disable-next-line quotes
+  const defaultCmd = `/bin/sh -c 'echo {\\"ready\\":true} && exec tail -f /dev/null'`;
   const testerConfig = merge({
     image: argv.tester_image || `makeomatic/node:${argv.node}-${argv.tester_flavour}`,
     hostname: 'tester',
     working_dir: '/src',
     volumes: [],
+    depends_on: Object.keys(compose.services),
     environment: {
       NODE_ENV: 'test',
     },
     ports: [],
-    command: 'tail -f /dev/null',
+    command: defaultCmd,
   }, argv.extras.tester);
   const workingDir = testerConfig.working_dir;
   const workingVolume = `\${PWD}:${workingDir}`;
@@ -100,9 +103,10 @@ function tester(compose, argv) {
   );
 
   if (argv.http) {
-    volumes.push('~/.local/share/mdep-runner:/var/run');
+    await fs.mkdir(socketDir, { recursive: true, mode: 0o0755 });
+    volumes.push(`${socketDir}:/var/run`);
     volumes.push(`${resolve(__dirname, '../../..')}:${workingDir}/node_modules/@makeomatic/deploy`);
-    if (testerConfig.command === 'tail -f /dev/null') {
+    if (testerConfig.command === defaultCmd) {
       testerConfig.command = `node ${workingDir}/node_modules/@makeomatic/deploy/bin/runner.js`;
     }
   }

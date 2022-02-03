@@ -6,7 +6,7 @@ const isWin = process.platform === 'win32';
 
 exports.command = 'compose';
 exports.desc = 'installs compose on the system';
-exports.handler = (argv) => {
+exports.handler = async (argv) => {
   npmPath.set();
 
   // verify if we have compose or not
@@ -30,7 +30,7 @@ exports.handler = (argv) => {
    * Generates dynamic docker-compose file based on the presets
    */
   if (argv.auto_compose) {
-    require('./auto-compose').handler(argv);
+    await require('./auto-compose').handler(argv);
     const autoComposeFile = argv.docker_compose;
 
     dockerComposeFiles.unshift(autoComposeFile);

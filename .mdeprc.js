@@ -1,8 +1,10 @@
 /* eslint-disable no-template-curly-in-string */
 
+const user = process.getuid();
+
 module.exports = {
   nycCoverage: false,
-  test_framework: 'jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --maxWorkers=50% --verbose --colors',
+  test_framework: 'jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --maxWorkers=50% --colors',
   tests: '__tests__/*.js',
   auto_compose: true,
   node: '16',
@@ -28,8 +30,5 @@ module.exports = {
   },
   euser: 'root',
   tuser: 'node',
-  arbitrary_exec: [
-    'apk add git curl',
-    'wget -qO- https://get.pnpm.io/v6.16.js | node - add --global pnpm',
-  ],
+  arbitrary_exec: ['apk add git'],
 };
