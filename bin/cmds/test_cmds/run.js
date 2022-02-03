@@ -86,10 +86,12 @@ exports.handler = async (argv) => {
     // eslint-disable-next-line no-cond-assign
     while ((line = lines.pop()) !== undefined) {
       try {
+        debug('assessing line - `%s`', line);
         const data = JSON.parse(line)[field];
         assert(data);
         return data;
       } catch (e) {
+        debug('line %s', line, e.message);
         // ignore line, check previous
       }
     }
@@ -97,7 +99,8 @@ exports.handler = async (argv) => {
     if (attempt > 20) throw new Error(`cant get "${field}" id after 20s`);
 
     await new Promise((resolve) => setTimeout(resolve, 1000));
-    return getField(attempt + 1);
+
+    return getField(field, attempt + 1);
   };
 
   /**

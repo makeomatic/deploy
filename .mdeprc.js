@@ -1,7 +1,5 @@
 /* eslint-disable no-template-curly-in-string */
 
-const user = process.getuid();
-
 module.exports = {
   nycCoverage: false,
   test_framework: 'jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --maxWorkers=50% --colors',
