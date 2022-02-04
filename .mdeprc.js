@@ -7,6 +7,7 @@ module.exports = {
   auto_compose: true,
   node: '16',
   tester_flavour: 'chrome-tester',
+  mirror: true,
   services: [
     'redisSentinel',
     'redisCluster',
@@ -19,7 +20,7 @@ module.exports = {
   in_one: true,
   extras: {
     tester: {
-      shm_size: '128m',
+      shm_size: '256m',
       environment: {
         CHROME_PATH: '/usr/bin/chromium-browser',
         DEBUG: "${DEBUG:-''}",

@@ -6,6 +6,7 @@ const hyperid = require('hyperid');
 const merge = require('lodash.merge');
 const path = require('path');
 const { resolve } = require('path');
+const debug = require('debug')('test');
 
 const SERVICE_MAP = {
   redis,
@@ -30,6 +31,17 @@ exports.handler = async (argv) => {
   compose.networks = {};
   compose.services = {};
   compose.volumes = {};
+
+  if (argv.mirror) {
+    debug('adding mirror');
+    compose.services.verdaccio = {
+      image: 'verdaccio/verdaccio:5',
+      volumes: ['${PWD}/node_modules:/verdaccio/plugins:ro'],
+      environment: {
+        NODE_ENV: 'production',
+      },
+    };
+  }
 
   if (argv.isMutagen) {
     compose.volumes['makeomatic-deploy-code'] = {};
@@ -79,7 +91,7 @@ exports.handler = async (argv) => {
  * Prepares tester declaration
  */
 async function tester(compose, argv) {
-  const socketDir = resolve('~/.local/share/mdep-runner');
+  const socketDir = resolve(process.env.HOME, '.local/share/mdep-runner');
   // eslint-disable-next-line quotes
   const defaultCmd = `/bin/sh -c 'echo {\\"ready\\":true} && exec tail -f /dev/null'`;
   const testerConfig = merge({
@@ -101,6 +113,11 @@ async function tester(compose, argv) {
   volumes.push(
     argv.isMutagen ? `makeomatic-deploy-code:${workingDir}` : workingVolume
   );
+
+  if (argv.mirror) {
+    testerConfig.environment.NPM_CONFIG_REGISTRY = 'http://verdaccio:4873';
+    testerConfig.environment.YARN_REGISTRY = 'http://verdaccio:4873';
+  }
 
   if (argv.http) {
     await fs.mkdir(socketDir, { recursive: true, mode: 0o0755 });

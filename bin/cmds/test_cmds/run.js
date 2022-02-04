@@ -44,6 +44,8 @@ function removeCommonPrefix(from, compareWith) {
 exports.command = 'run';
 exports.desc = 'performs testing';
 exports.handler = async (argv) => {
+  debug(argv);
+
   await require('./compose').handler(argv);
 
   // now that we have compose get tests

@@ -11,7 +11,9 @@
   "license": "MIT",
   "scripts": {
     "lint": "eslint ./bin",
-    "test": "npm run lint && ./bin/cli.js test run",
+    "test": "npm run lint && npm run test:http && npm run test:exec",
+    "test:http": "./bin/cli.js test run --http",
+    "test:exec": "./bin/cli.js test run",
     "semantic-release": "semantic-release",
     "prepare": "husky install"
   },

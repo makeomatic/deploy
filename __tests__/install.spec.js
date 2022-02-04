@@ -5,12 +5,21 @@ const { resolve } = require('path');
 const set = require('lodash.set');
 const fs = require('fs/promises');
 const debug = require('debug')('test');
-const execa = require('execa');
+const _execa = require('execa');
+
+const execa = async (cmd, args, opts = {}) => {
+  const proc = _execa(cmd, args, { buffer: false, ...opts });
+  if (!opts.buffer) {
+    proc.stdout.pipe(process.stdout);
+    proc.stderr.pipe(process.stderr);
+  }
+  return proc;
+};
 
 // setup git so that we can try commits
 beforeAll(async () => {
-  await execa.command('git config --global user.name deploy-tests');
-  await execa.command('git config --global user.email ci@github.com');
+  await _execa.command('git config --global user.name deploy-tests');
+  await _execa.command('git config --global user.email ci@github.com');
 });
 
 describe('(yarn) test installing the package', () => {
@@ -44,12 +53,12 @@ describe('(yarn) test installing the package', () => {
     });
 
     test('is able to install package locally', async () => {
-      await execa('yarn', ['add', tarball, '--no-lockfile']);
+      await execa('yarn', ['add', '--no-lockfile', tarball]);
       await execa('yarn', ['mdep', 'install']);
     }, 240000);
 
     test('returns node version', async () => {
-      const { stdout } = await execa('node_modules/.bin/mdep', ['get-config', 'node', '--node', '99.0.0']);
+      const { stdout } = await execa('node_modules/.bin/mdep', ['get-config', 'node', '--node', '99.0.0'], { buffer: true });
       expect(stdout).toBe('99.0.0');
     });
 
@@ -132,7 +141,7 @@ describe('(yarn) test installing the package', () => {
     test('able to commit with hooks installed', async () => {
       await fs.writeFile('.gitignore', 'node_modules\n');
       await execa('git', ['add', '.']);
-      await expect(execa('git', ['commit', '-m', 'wrong message'])).rejects.toThrow('subject may not be empty');
+      await expect(execa('git', ['commit', '-m', 'wrong message'], { buffer: true })).rejects.toThrow('subject may not be empty');
       await execa('git', ['commit', '-m', 'chore(test): correct message']);
     });
   });
@@ -144,7 +153,7 @@ describe('(yarn) test installing the package', () => {
 
     test('returns current node version in module', async () => {
       process.chdir(cwd);
-      const { stdout } = await execa('mdep', ['get-config', '--path', 'node']);
+      const { stdout } = await execa('mdep', ['get-config', '--path', 'node'], { buffer: true });
       expect(stdout).toBe('16');
     });
   });
@@ -166,6 +175,8 @@ describe('(pnpm) test installing the package', () => {
 
   beforeAll(async () => {
     await clean();
+    await execa('pnpm', ['config', 'set', 'store-dir', '~/.pnpm-store']);
+    await execa('pnpm', ['config', 'set', 'prefer-offline', 'true']);
     await execa('pnpm', ['pack']);
   });
 
@@ -180,21 +191,17 @@ describe('(pnpm) test installing the package', () => {
     });
 
     test('is able to install package locally', async () => {
-      const proc = execa('pnpm', ['add', tarball], {
-        buffer: false,
+      await execa('pnpm', ['add', tarball], {
         cwd: tmpDir,
-        all: true,
         env: {
           DEBUG: 'makeomatic:deploy',
         },
       });
-      proc.all.pipe(process.stdout);
-      await proc;
       await execa('pnpm', ['mdep', 'install']);
     }, 240000);
 
     test('returns node version', async () => {
-      const { stdout } = await execa('node_modules/.bin/mdep', ['get-config', 'node', '--node', '99.0.0']);
+      const { stdout } = await execa('node_modules/.bin/mdep', ['get-config', 'node', '--node', '99.0.0'], { buffer: true });
       expect(stdout).toBe('99.0.0');
     });
 
@@ -250,16 +257,12 @@ describe('(pnpm) test installing the package', () => {
     });
 
     test('is able to install package locally', async () => {
-      const proc = execa('pnpm', ['add', tarball], {
-        buffer: false,
+      await execa('pnpm', ['add', tarball], {
         cwd: tmpDir,
-        all: true,
         env: {
           DEBUG: 'makeomatic:deploy',
         },
       });
-      proc.all.pipe(process.stdout);
-      await proc;
       await execa('pnpm', ['mdep', 'install']);
     }, 240000);
 
@@ -286,12 +289,13 @@ describe('(pnpm) test installing the package', () => {
 
   describe('installs globally', () => {
     test('is able to install package globally', async () => {
+      await execa('pnpm', ['install', '-g']);
       await execa('pnpm', ['-g', 'add', tarball]);
     }, 240000);
 
     test('returns current node version in module', async () => {
       process.chdir(cwd);
-      const { stdout } = await execa('mdep', ['get-config', '--path', 'node']);
+      const { stdout } = await execa('mdep', ['get-config', '--path', 'node'], { buffer: true });
       expect(stdout).toBe('16');
     });
   });
