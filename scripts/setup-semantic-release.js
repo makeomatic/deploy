@@ -155,7 +155,7 @@ async function main() {
   await copyConfiguration('.releaserc.json', ['.releaserc.js']);
   await copyConfiguration('.commitlintrc.js');
 
-  if (!(await hasDir('.husky'))) {
+  if (!(await hasDir('.husky/_'))) {
     console.log('⚠️ husky not initialized yet');
     const { stdout } = await exec(path.resolve(__dirname, '../node_modules/.bin/husky'), ['install'], { cwd: rootDir() });
     console.log('✅  husky initialized:');
