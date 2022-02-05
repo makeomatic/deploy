@@ -107,8 +107,9 @@ async function tester(compose, argv) {
     command: defaultCmd,
   }, argv.extras.tester);
   const workingDir = testerConfig.working_dir;
-  const mutagenWorkingDir = (argv.isMutagen && argv.mutagenWorkingDir) || workingDir;
-  const workingVolume = `\${PWD}:${workingDir}`;
+  const sourceDir = argv.mutagenDir || '${PWD}';
+  const mutagenWorkingDir = argv.mutagenWorkingDir || workingDir;
+  const workingVolume = `${sourceDir}:${mutagenWorkingDir}`;
   const volumes = testerConfig.volumes.filter((volume) => volume !== workingVolume);
 
   volumes.push(
