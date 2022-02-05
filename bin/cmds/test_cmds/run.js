@@ -44,7 +44,13 @@ function removeCommonPrefix(from, compareWith) {
 exports.command = 'run';
 exports.desc = 'performs testing';
 exports.handler = async (argv) => {
-  debug(argv);
+  if (argv.http && os.platform() === 'darwin') {
+    process.emitWarning('http is not supported on os x because we cant share unix sockets', {
+      code: 'E_DEP_0001',
+      type: 'MakeomaticDeploy',
+    });
+    argv.http = false;
+  }
 
   await require('./compose').handler(argv);
 

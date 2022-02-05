@@ -1,6 +1,9 @@
 const npmPath = require('npm-path');
 const onDeath = require('death')({ SIGHUP: true, exit: true });
 const { exec, echo, which } = require('shelljs');
+const execa = require('execa');
+const fs = require('fs');
+const { resolve } = require('path');
 
 const isWin = process.platform === 'win32';
 
@@ -19,7 +22,21 @@ exports.handler = async (argv) => {
   const dockerComposeFiles = [];
 
   if (mutagen) {
-    argv.isMutagen = true;
+    let isMutagen = true;
+    if (process.env.PNPM_SCRIPT_SRC_DIR
+        || fs.existsSync(resolve(process.cwd(), 'pnpm-lock.yaml'))) {
+      const { stdout } = await execa.command('pnpm config get package-import-method');
+      if (!['clone', 'copy'].includes(stdout)) {
+        process.emitWarning('pnpm + mutagen dont work with hardlinks enabled', {
+          code: 'E_DEP_0002',
+          type: 'MakeomaticDeploy',
+          detail: 'run `pnpm config -g set package-import-method=copy` and pnpm i after',
+        });
+        isMutagen = false;
+      }
+    }
+
+    argv.isMutagen = isMutagen;
   }
 
   if (argv.docker_compose_multi.length > 0) {
