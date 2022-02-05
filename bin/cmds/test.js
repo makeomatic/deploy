@@ -172,6 +172,13 @@ exports.builder = (yargs) => (
       type: 'boolean',
       default: false,
     })
+    .option('mutagen-dir', {
+      describe: 'custom mutagen dir',
+      default: process.cwd(),
+    })
+    .option('mutagen-working-dir', {
+      describe: 'custom mutagen working dir',
+    })
     .option('exec-user', {
       alias: 'euser',
       describe: 'user to run setup commands with',

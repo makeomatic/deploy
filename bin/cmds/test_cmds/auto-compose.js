@@ -52,7 +52,7 @@ exports.handler = async (argv) => {
           mode: 'two-way-resolved',
         },
         code: {
-          alpha: process.cwd(),
+          alpha: argv.mutagenDir,
           beta: 'volume://makeomatic-deploy-code',
         },
       },
@@ -107,11 +107,12 @@ async function tester(compose, argv) {
     command: defaultCmd,
   }, argv.extras.tester);
   const workingDir = testerConfig.working_dir;
+  const mutagenWorkingDir = (argv.isMutagen && argv.mutagenWorkingDir) || workingDir;
   const workingVolume = `\${PWD}:${workingDir}`;
   const volumes = testerConfig.volumes.filter((volume) => volume !== workingVolume);
 
   volumes.push(
-    argv.isMutagen ? `makeomatic-deploy-code:${workingDir}` : workingVolume
+    argv.isMutagen ? `makeomatic-deploy-code:${mutagenWorkingDir}` : workingVolume
   );
 
   if (argv.mirror) {
