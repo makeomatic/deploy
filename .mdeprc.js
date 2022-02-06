@@ -18,7 +18,7 @@ module.exports = {
     'couchdb',
   ],
   mutagenVolumeExternal: true,
-  mutagenVolumeName: 'mdep-src  ',
+  mutagenVolumeName: 'mdep-src',
   in_one: true,
   extras: {
     tester: {
