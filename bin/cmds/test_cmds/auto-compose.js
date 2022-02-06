@@ -44,7 +44,11 @@ exports.handler = async (argv) => {
   }
 
   if (argv.isMutagen) {
-    compose.volumes['makeomatic-deploy-code'] = {};
+    compose.volumes[argv.mutagenVolumeName] = {};
+    if (argv.mutagenVolumeExternal) {
+      compose.volumes[argv.mutagenVolumeName].name = argv.mutagenVolumeName;
+    }
+
     compose['x-mutagen'] = {
       sync: {
         defaults: {
@@ -53,7 +57,7 @@ exports.handler = async (argv) => {
         },
         code: {
           alpha: argv.mutagenDir,
-          beta: 'volume://makeomatic-deploy-code',
+          beta: `volume://${argv.mutagenVolumeName}`,
         },
       },
     };
@@ -113,7 +117,7 @@ async function tester(compose, argv) {
   const volumes = testerConfig.volumes.filter((volume) => volume !== workingVolume);
 
   volumes.push(
-    argv.isMutagen ? `makeomatic-deploy-code:${mutagenWorkingDir}` : workingVolume
+    argv.isMutagen ? `${argv.mutagenVolumeName}:${mutagenWorkingDir}` : workingVolume
   );
 
   if (argv.mirror) {

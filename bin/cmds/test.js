@@ -179,6 +179,16 @@ exports.builder = (yargs) => (
     .option('mutagen-working-dir', {
       describe: 'custom mutagen working dir',
     })
+    .option('mutagen-volume-name', {
+      describe: 'shared mutagen volume name',
+      type: 'string',
+      default: 'makeomatic-deploy-code',
+    })
+    .option('mutagen-volume-external', {
+      describe: 'set as external to avoid recreating each time',
+      type: 'boolean',
+      default: false,
+    })
     .option('exec-user', {
       alias: 'euser',
       describe: 'user to run setup commands with',

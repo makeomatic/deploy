@@ -7,7 +7,7 @@ module.exports = {
   auto_compose: true,
   node: '16',
   tester_flavour: 'chrome-tester',
-  mirror: true,
+  mirror: process.platform !== 'darwin',
   services: [
     'redisSentinel',
     'redisCluster',
@@ -17,6 +17,8 @@ module.exports = {
     'cassandra',
     'couchdb',
   ],
+  mutagenVolumeExternal: true,
+  mutagenVolumeName: 'mdep-src  ',
   in_one: true,
   extras: {
     tester: {

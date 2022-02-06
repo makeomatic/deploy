@@ -70,9 +70,10 @@ exports.handler = async (argv) => {
       exec(argv.on_fail);
     }
 
+    const cleanup = argv.mutagenVolumeExternal ? 'down' : 'down -v';
     if (argv.no_cleanup !== true) {
       echo(`\nAutomatically cleaning up after ${signal}\n`);
-      exec(`${dockerCompose} down -v --remove-orphans; true`);
+      exec(`${dockerCompose} ${cleanup} --remove-orphans; true`);
 
       if (argv.auto_compose) {
         const deleteCmd = (isWin ? 'del ' : 'rm ') + argv.docker_compose;
@@ -83,7 +84,7 @@ exports.handler = async (argv) => {
       // force exit now
       if (signal === 'exit') process.exit(code || 0);
     } else {
-      echo(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} down -v --remove-orphans;\n`);
+      echo(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} ${cleanup} --remove-orphans;\n`);
     }
   }
 
