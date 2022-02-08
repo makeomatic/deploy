@@ -120,6 +120,10 @@ async function tester(compose, argv) {
     argv.isMutagen ? `${argv.mutagenVolumeName}:${mutagenWorkingDir}` : workingVolume
   );
 
+  if (argv.isRootless && testerConfig.user) {
+    delete testerConfig.user;
+  }
+
   if (argv.mirror) {
     testerConfig.environment.NPM_CONFIG_REGISTRY = 'http://verdaccio:4873';
     testerConfig.environment.YARN_REGISTRY = 'http://verdaccio:4873';
