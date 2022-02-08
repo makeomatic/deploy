@@ -1,6 +1,6 @@
 const npmPath = require('npm-path');
 const onDeath = require('death')({ SIGHUP: true, exit: true });
-const { echo, which } = require('shelljs');
+const { exec, echo, which } = require('shelljs');
 const execa = require('execa');
 const fs = require('fs');
 const { resolve } = require('path');
@@ -75,18 +75,18 @@ exports.handler = async (argv) => {
 
     // allows to exec arbitrary code on exit
     if (argv.on_fail && signal === 'exit' && code !== 0) {
-      execa.commandSync(argv.on_fail);
+      exec(argv.on_fail);
     }
 
     const cleanup = argv.mutagenVolumeExternal ? 'down' : 'down -v';
     if (argv.no_cleanup !== true) {
       echo(`\nAutomatically cleaning up after ${signal}\n`);
-      execa.commandSync(`${dockerCompose} ${cleanup} --remove-orphans; true`);
+      exec(`${dockerCompose} ${cleanup} --remove-orphans; true`);
 
       if (argv.auto_compose) {
         const deleteCmd = (isWin ? 'del ' : 'rm ') + argv.docker_compose;
         echo(deleteCmd);
-        execa.commandSync(deleteCmd);
+        exec(deleteCmd);
       }
 
       // force exit now
