@@ -85,8 +85,12 @@ async function copyConfiguration(filename, _fallback = [], renameTo = filename) 
   }
 
   // copy over
-  await fs.copyFile(path.join(__dirname, '..', filename), rcpath);
-  console.log(`✅  ${rcpath} created`);
+  try {
+    await fs.copyFile(path.join(__dirname, '..', filename), rcpath);
+    console.log(`✅  ${rcpath} created`);
+  } catch (e) {
+    console.warn(`❌ ${rcpath} failed to copy`);
+  }
 }
 
 async function getPkg() {

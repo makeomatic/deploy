@@ -135,7 +135,7 @@ describe('(yarn) test installing the package', () => {
 
     test('.husky files content sane', async () => {
       const contents = await fs.readFile('.husky/commit-msg', { encoding: 'utf8' });
-      expect(contents).toContain('"$(npm x mdep bin commitlint)" --edit $1');
+      expect(contents).toContain('"`$(npm bin)/mdep bin commitlint`" --edit $1');
     });
 
     test('able to commit with hooks installed', async () => {
@@ -283,7 +283,7 @@ describe('(pnpm) test installing the package', () => {
 
     test('.husky files content sane', async () => {
       const contents = await fs.readFile('.husky/commit-msg', { encoding: 'utf8' });
-      expect(contents).toContain('"$(npm x mdep bin commitlint)" --edit $1');
+      expect(contents).toContain('"`$(npm bin)/mdep bin commitlint`" --edit $1');
     });
   });
 
