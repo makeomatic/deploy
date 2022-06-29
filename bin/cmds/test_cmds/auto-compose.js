@@ -153,14 +153,14 @@ async function tester(compose, argv) {
 
 function redisCluster(compose, argv) {
   compose.services['redis-cluster'] = merge({
-    image: 'makeomatic/redis-cluster:5-alpine',
+    image: 'makeomatic/redis-stack-cluster:6',
     hostname: 'redis-cluster',
   }, argv.extras.redisCluster);
 }
 
 function redis(compose, argv) {
   compose.services.redis = merge({
-    image: 'redis:6-alpine',
+    image: 'redis/redis-stack-server:6.2.2-v4',
     hostname: 'redis',
     expose: ['6379'],
   }, argv.extras.redis);
@@ -228,7 +228,7 @@ function elasticsearch(compose, argv) {
 
 function cassandra(composer, argv) {
   composer.services.cassandra = merge({
-    image: 'cassandra:3.11',
+    image: 'cassandra:4',
     hostname: 'cassandra',
     environment: {
       MAX_HEAP_SIZE: '128m',

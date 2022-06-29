@@ -9,6 +9,7 @@ const get = require('lodash.get');
 const set = require('lodash.set');
 const fs = require('fs/promises');
 const exec = require('execa');
+const tempy = require('tempy');
 
 const isForced = process.argv.some((a) => a === '--force');
 
@@ -170,6 +171,7 @@ async function main() {
   if (pkg.husky) {
     console.log('⚠️ current husky config');
     console.log(pkg.husky);
+    const tmpCopy = JSON.stringify(pkg.husky);
 
     if (pkg.husky.hooks) {
       for (const entry of Object.entries(pkg.husky.hooks)) {
@@ -202,10 +204,21 @@ async function main() {
     console.log('⚠️ final config:');
     console.log(pkg.husky);
     console.log('⚠️ migrating husky config');
-    await savePackage(pkg);
-    const { stdout } = await exec('npm', ['exec', '--', 'github:typicode/husky-4-to-7', '--remove-v4-config'], { cwd: rootDir() });
-    console.log('✅  husky 4-to-7 migrated:');
-    console.log(stdout);
+    try {
+      await savePackage(pkg);
+      await tempy.directory.task(async (tempPath) => {
+        await exec('npm', ['i', '--no-save', 'github:typicode/husky-4-to-8#07a954ec6082bd56eb35b79ebb300a171f60496a'], { cwd: tempPath });
+        const { stdout } = await exec(path.resolve(tempPath, 'node_modules/.bin/husky-4-to-8'), [
+          '--remove-v4-config'
+        ], { cwd: rootDir() })
+        console.log('✅  husky 4-to-8 migrated:');
+        console.log(stdout);
+      })
+    } catch (e) {
+      pkg.husky = JSON.parse(tmpCopy)
+      await savePackage(pkg);
+      throw e
+    }
   }
 
   await copyConfiguration('.husky/commit-msg.sample', [], '.husky/commit-msg');

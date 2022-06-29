@@ -186,7 +186,7 @@ describe('(pnpm) test installing the package', () => {
     beforeAll(async () => {
       debug('changing to %s', tmpDir);
       process.chdir(tmpDir);
-      await execa('pnpm', ['init', '-yp']);
+      await execa('pnpm', ['init']);
       await execa('git', ['init']);
     });
 
@@ -247,7 +247,7 @@ describe('(pnpm) test installing the package', () => {
     beforeAll(async () => {
       debug('changing to %s', tmpDir);
       process.chdir(tmpDir);
-      await execa('pnpm', ['init', '-yp']);
+      await execa('pnpm', ['init']);
       await execa('git', ['init']);
 
       const pkgName = `${tmpDir}/package.json`;
@@ -289,7 +289,8 @@ describe('(pnpm) test installing the package', () => {
 
   describe('installs globally', () => {
     test('is able to install package globally', async () => {
-      await execa('pnpm', ['install', '-g']);
+      const { stdout, stderr } = await execa('npm', ['bin', '--location=global'], { buffer: true });
+      await execa('pnpm', ['config', 'set', `global-bin-dir=${stdout}`]);
       await execa('pnpm', ['-g', 'add', tarball]);
     }, 240000);
 
