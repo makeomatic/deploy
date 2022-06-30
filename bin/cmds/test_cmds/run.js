@@ -267,11 +267,5 @@ exports.handler = async (argv) => {
 
   await Promise.map(argv.post_exec, (cmd) => dockerExec(cmd, undefined, { user: argv.euser }));
 
-  // upload codecoverage report
-  if (argv.coverage) {
-    // this is to avoid exposing token
-    await echoAndExec(argv.coverage, ['>', '/dev/null', '2>1']);
-  }
-
   if (client) await client.close();
 };

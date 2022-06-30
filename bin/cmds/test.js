@@ -99,12 +99,6 @@ exports.builder = (yargs) => (
       describe: 'test framework to use',
       default: 'mocha',
     })
-    .option('coverage', {
-      describe: 'whether to upload coverage or not',
-      default: process.env.CI === 'true'
-        ? './node_modules/.bin/codecov'
-        : false,
-    })
     .option('mirror-npm', {
       alias: 'mirror',
       type: 'boolean',
