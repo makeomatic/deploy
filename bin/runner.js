@@ -9,12 +9,12 @@ const { serializeError } = require('serialize-error');
 const id = require('hyperid')({ urlSafe: true });
 const logger = require('pino')();
 
-const Command = Type.Object({
+const Command = Type.Strict(Type.Object({
   file: Type.String(),
   args: Type.Optional(Type.Array(Type.String({ minLength: 1 }))),
   timeout: Type.Optional(Type.Number({ default: 0 })),
   user: Type.Optional(Type.String()),
-});
+}));
 
 const fastify = Fastify({
   logger: false,
