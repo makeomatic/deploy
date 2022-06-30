@@ -45,7 +45,7 @@
     "debug": "^4.3.4",
     "execa": "5",
     "fastify": "^4.1.0",
-    "fastify-compress": "^4.1.0",
+    "@fastify/compress": "^6.0.0",
     "find-up": "^5.0.0",
     "get-port": "^5.1.1",
     "glob": "^8.0.3",

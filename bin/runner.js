@@ -2,7 +2,7 @@
  * port used to launch test runner
  */
 const { PassThrough, compose } = require('stream');
-const Fastify = require('fastify');
+const Fastify = require('fastify').default;
 const { Type } = require('@sinclair/typebox');
 const execa = require('execa');
 const { serializeError } = require('serialize-error');
@@ -20,7 +20,7 @@ const fastify = Fastify({
   logger: false,
 });
 
-fastify.register(require('fastify-compress'));
+fastify.register(require('@fastify/compress'));
 
 const uidCache = Object.create(null);
 const hasOwnProperty = Object.prototype.hasOwnProperty.bind(uidCache);
