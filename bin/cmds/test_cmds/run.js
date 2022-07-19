@@ -77,7 +77,7 @@ exports.handler = async (argv) => {
   }
 
   // start containers
-  if((await echoAndExec(compose, [...composeArgs, 'up', '-d'])).exitCode !== 0) {
+  if ((await echoAndExec(compose, [...composeArgs, 'up', '-d'])).exitCode !== 0) {
     echo('failed to start docker containers. Exit 128');
     exit(128);
   }
