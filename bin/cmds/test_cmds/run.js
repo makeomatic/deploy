@@ -73,7 +73,7 @@ exports.handler = async (argv) => {
   }
 
   if (argv.envFile) {
-    composeArgs.unshift('--env-file', argv.envFile)
+    composeArgs.unshift('--env-file', argv.envFile);
   }
 
   // start containers
@@ -204,37 +204,36 @@ exports.handler = async (argv) => {
   }
 
   async function checkUser(name) {
-    echo(`checking container user ${name}`)
+    echo(`checking container user ${name}`);
 
     try {
-      await dockerExec('getent', ['passwd', name], { user: 'root' })
-      return true
+      await dockerExec('getent', ['passwd', name], { user: 'root' });
+      return true;
     } catch (e) {
-      return false
+      return false;
     }
   }
 
   async function createUser(name, uid) {
-    echo(`create user "${name}"`)
+    echo(`create user "${name}"`);
 
-    const userExtraArgs = uid ? ['-u', uid, '-g', uid] : []
-    await dockerExec('adduser', ['-D', ...userExtraArgs, name], { user: 'root' })
+    const userExtraArgs = uid ? ['-u', uid, '-g', uid] : [];
+    await dockerExec('adduser', ['-D', ...userExtraArgs, name], { user: 'root' });
   }
 
-
   if (!argv.isRootless) {
-    const uid = process.getuid()
+    const uid = process.getuid();
 
     if (!(await checkUser(uid))) {
-      createUser('tester', uid)
+      createUser('tester', uid);
     }
 
     if (argv.ruser && !(await checkUser(argv.ruser))) {
-      createUser(argv.ruser)
+      createUser(argv.ruser);
     }
 
     if (argv.tuser && !(await checkUser(argv.tuser))) {
-      createUser(argv.tuser)
+      createUser(argv.tuser);
     }
   }
 
