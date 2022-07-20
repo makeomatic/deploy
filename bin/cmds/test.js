@@ -199,6 +199,11 @@ exports.builder = (yargs) => (
       type: 'boolean',
       default: false,
     })
+    .option('env-file', {
+      alias: 'env_file',
+      describe: '.env file for docker-compose',
+      type: 'string',
+    })
     .help()
 );
 exports.handler = () => {};

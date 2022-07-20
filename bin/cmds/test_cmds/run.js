@@ -72,6 +72,10 @@ exports.handler = async (argv) => {
     }
   }
 
+  if (argv.envFile) {
+    composeArgs.unshift('--env-file', argv.envFile);
+  }
+
   // start containers
   if ((await echoAndExec(compose, [...composeArgs, 'up', '-d'])).exitCode !== 0) {
     echo('failed to start docker containers. Exit 128');
@@ -197,6 +201,40 @@ exports.handler = async (argv) => {
 
       return ex;
     };
+  }
+
+  async function checkUser(name) {
+    echo(`checking container user ${name}`);
+
+    try {
+      await dockerExec('getent', ['passwd', name], { user: 'root' });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function createUser(name, uid) {
+    echo(`create user "${name}"`);
+
+    const userExtraArgs = uid ? ['-u', uid, '-g', uid] : [];
+    await dockerExec('adduser', ['-D', ...userExtraArgs, name], { user: 'root' });
+  }
+
+  if (!argv.isRootless) {
+    const uid = process.getuid();
+
+    if (!(await checkUser(uid))) {
+      createUser('tester', uid);
+    }
+
+    if (argv.ruser && !(await checkUser(argv.ruser))) {
+      createUser(argv.ruser);
+    }
+
+    if (argv.tuser && !(await checkUser(argv.tuser))) {
+      createUser(argv.tuser);
+    }
   }
 
   // easy way to wait for containers, can do improved detection, but it's not generic
