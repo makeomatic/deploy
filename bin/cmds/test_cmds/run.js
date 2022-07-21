@@ -225,15 +225,15 @@ exports.handler = async (argv) => {
     const uid = process.getuid();
 
     if (!(await checkUser(uid))) {
-      createUser('tester', uid);
+      await createUser('tester', uid);
     }
 
     if (argv.ruser && !(await checkUser(argv.ruser))) {
-      createUser(argv.ruser);
+      await createUser(argv.ruser);
     }
 
     if (argv.tuser && !(await checkUser(argv.tuser))) {
-      createUser(argv.tuser);
+      await createUser(argv.tuser);
     }
   }
 
