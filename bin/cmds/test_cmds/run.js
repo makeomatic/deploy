@@ -251,6 +251,11 @@ exports.handler = async (argv) => {
     await dockerExec('node-gyp', ['build'], { user: argv.euser });
   }
 
+  if (argv.onlyPrepare) {
+    if (client) await client.close();
+    return;
+  }
+
   if (argv.sleep) {
     await echoAndExec('sleep', [argv.sleep]);
   }

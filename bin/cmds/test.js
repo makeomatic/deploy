@@ -204,6 +204,11 @@ exports.builder = (yargs) => (
       describe: '.env file for docker-compose',
       type: 'string',
     })
+    .option('only-prepare', {
+      describe: 'creates containers but doesn\'t run the tests',
+      type: 'boolean',
+      default: false,
+    })
     .help()
 );
 exports.handler = () => {};

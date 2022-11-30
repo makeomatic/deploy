@@ -79,7 +79,7 @@ exports.handler = async (argv) => {
     }
 
     const cleanup = argv.mutagenVolumeExternal ? 'down' : 'down -v';
-    if (argv.no_cleanup !== true) {
+    if (argv.no_cleanup !== true && argv.onlyPrepare !== true) {
       echo(`\nAutomatically cleaning up after ${signal}\n`);
       exec(`${dockerCompose} ${cleanup} --remove-orphans; true`);
 
