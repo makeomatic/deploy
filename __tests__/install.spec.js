@@ -289,9 +289,13 @@ describe('(pnpm) test installing the package', () => {
 
   describe('installs globally', () => {
     test('is able to install package globally', async () => {
-      const { stdout, stderr } = await execa('npm', ['bin', '--location=global'], { buffer: true });
-      await execa('pnpm', ['config', 'set', `global-bin-dir=${stdout}`]);
-      await execa('pnpm', ['-g', 'add', tarball]);
+      const { stdout, stderr } = await execa('npm', ['prefix', '--location=global'], { buffer: true });
+      const globalBinDir = `${stdout}/bin`;
+      await execa('pnpm', ['-g', 'add', tarball], {
+        env: {
+          PNPM_HOME: globalBinDir,
+        },
+      });
     }, 240000);
 
     test('returns current node version in module', async () => {

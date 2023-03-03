@@ -41,7 +41,7 @@ exports.handler = (argv) => {
     `-f ${tmpDockerfile}`,
   ];
 
-  const { docker_build_args: dba } = argv;
+  const { docker_build_args: dba, docker_context: context } = argv;
   if (dba && typeof dba === 'object') {
     for (const [prop, value] of Object.entries(dba)) {
       args.push(`--build-arg ${prop}=${value}`);
@@ -49,7 +49,7 @@ exports.handler = (argv) => {
   }
 
   // start builder
-  const command = `${args.join(' ')} .`;
+  const command = `${args.join(' ')} ${context}`;
   echo(command);
   const build = exec(command);
 
