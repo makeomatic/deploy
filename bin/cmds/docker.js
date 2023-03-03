@@ -37,7 +37,7 @@ exports.builder = (yargs) => (
     .option('docker_context', {
       alias: 'c',
       default: '.',
-      describe: 'docker build context path'
+      describe: 'docker build context path',
     })
     .strict(false)
     .help()
