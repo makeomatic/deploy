@@ -4,7 +4,7 @@
 const os = require('os');
 const Promise = require('bluebird');
 const path = require('path');
-const _glob = require('glob');
+const { glob } = require('glob');
 const execa = require('execa');
 const { echo, exit } = require('shelljs');
 const { Client } = require('undici');
@@ -14,7 +14,6 @@ const { promisify } = require('util');
 const { deserializeError } = require('serialize-error');
 const assert = require('assert');
 
-const glob = promisify(_glob);
 const pipeline = promisify(_pipeline);
 const debug = require('debug')('test');
 

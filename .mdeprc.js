@@ -5,7 +5,7 @@ module.exports = {
   test_framework: 'jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --maxWorkers=50% --colors',
   tests: '__tests__/*.js',
   auto_compose: true,
-  node: '16',
+  node: '18',
   tester_flavour: 'chrome-tester',
   mirror: process.platform !== 'darwin',
   services: [

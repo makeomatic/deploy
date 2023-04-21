@@ -1,4 +1,3 @@
-const execa = require('execa');
 const fs = require('fs/promises');
 const { resolve } = require('path');
 
@@ -14,8 +13,7 @@ exports.builder = (yargs) => {
     .help();
 };
 exports.handler = async (argv) => {
-  const bin = (await execa('npm', ['bin'], { cwd: resolve(__dirname, '../..') })).stdout;
-  const path = resolve(bin, argv.binary);
+  const path = resolve(__dirname, '../../node_modules/.bin', argv.binary);
 
   try {
     if ((await fs.stat(path)).isFile()) {
