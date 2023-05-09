@@ -158,7 +158,7 @@ async function main() {
   }
 
   await copyConfiguration('.releaserc.json', ['.releaserc.js']);
-  await copyConfiguration('.commitlintrc.js', ['.commitlintrc.cjs, .commitlintrc.json, .commitlintrc.mjs']);
+  await copyConfiguration('.commitlintrc.js', ['.commitlintrc.cjs', '.commitlintrc.json', '.commitlintrc.mjs']);
 
   if (!(await hasDir('.husky/_'))) {
     console.log('⚠️ husky not initialized yet');
