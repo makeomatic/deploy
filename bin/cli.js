@@ -42,6 +42,12 @@ require('yargs')
     alias: 'dba',
     describe: 'docker build args',
   })
+  .option('docker_flags', {
+    alias: 'df',
+    describe: 'docker build flags',
+    type: 'array',
+    string: true,
+  })
   .option('repository', {
     alias: 'repo',
     describe: 'docker repository to use',

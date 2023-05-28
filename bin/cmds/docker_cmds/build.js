@@ -41,10 +41,22 @@ exports.handler = (argv) => {
     `-f ${tmpDockerfile}`,
   ];
 
-  const { docker_build_args: dba, docker_context: context } = argv;
+  const {
+    docker_build_args: dba,
+    docker_context: context,
+    docker_flags: df,
+  } = argv;
+
   if (dba && typeof dba === 'object') {
     for (const [prop, value] of Object.entries(dba)) {
       args.push(`--build-arg ${prop}=${value}`);
+    }
+  }
+
+  if (Array.isArray(df) && df.length > 0) {
+    for (const flag of df) {
+      // NOTE: no escaping, must be done on the input
+      args.push(flag);
     }
   }
 
