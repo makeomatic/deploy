@@ -160,7 +160,7 @@ function redisCluster(compose, argv) {
 
 function redis(compose, argv) {
   compose.services.redis = merge({
-    image: 'redis/redis-stack-server:6.2.2-v4',
+    image: 'redis/redis-stack-server:6.2.6-v7',
     hostname: 'redis',
     expose: ['6379'],
   }, argv.extras.redis);
