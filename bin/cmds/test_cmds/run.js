@@ -194,7 +194,7 @@ export const handler = async (argv) => {
       const execCmd = `${cmd} ${args.join(' ')}`.trim();
       const argOpts = user ? ['--user', user] : [];
       debug(execCmd);
-      const ex = execAsync('docker', ['exec', ...argOpts, container, '/bin/sh', '-c', execCmd], { buffer: !stream });
+      const ex = execAsync('docker', ['exec', ...argOpts, container, '/bin/sh', '-c', execCmd], { buffer: !stream, all: !stream });
 
       if (stream) {
         ex.stdout.pipe(process.stdout);
@@ -209,8 +209,8 @@ export const handler = async (argv) => {
     console.log(`checking container user ${uid}`);
 
     try {
-      const { stdout } = await dockerExec('getent', ['passwd', uid], { user: 'root', stream: false });
-      return stdout.split(':', 1)[0];
+      const { all } = await dockerExec('getent', ['passwd', uid], { user: 'root', stream: false });
+      return all.split(':', 1)[0];
     } catch (e) {
       return false;
     }
