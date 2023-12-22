@@ -316,8 +316,20 @@ export const handler = async (argv) => {
   }
 
   for (const cmd of argv.arbitrary_exec) {
+    let args;
+    let file;
+
+    if (typeof cmd === 'string') {
+      file = cmd;
+      args = undefined;
+    } else if (Array.isArray(cmd)) {
+      [file, ...args] = cmd;
+    } else {
+      throw new Error('cmd must be array or string');
+    }
+
     // eslint-disable-next-line no-await-in-loop
-    await dockerExec(cmd, undefined, { user: argv.euser, stdio: 'inherit' });
+    await dockerExec(file, args, { user: argv.euser, stdio: 'inherit' });
   }
 
   const limit = pLimit(argv.sort ? 1 : (argv.parallel || 1));
