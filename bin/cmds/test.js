@@ -1,13 +1,18 @@
 /**
  * Runs tests in the repo
- * @type {String}
  */
 
-exports.command = 'test <command>';
-exports.desc = 'performs tests in docker';
-exports.builder = (yargs) => (
+import * as autoComposeCommand from './test_cmds/auto-compose.js';
+import * as composeCommand from './test_cmds/compose.js';
+import * as runCommand from './test_cmds/run.js';
+
+export const command = 'test <command>';
+export const desc = 'performs tests in docker';
+export const builder = (yargs) => (
   yargs
-    .commandDir('test_cmds')
+    .command(autoComposeCommand)
+    .command(composeCommand)
+    .command(runCommand)
     .option('docker_compose', {
       describe: 'docker-compose file for testing',
       default: './test/docker-compose.yml',
@@ -60,7 +65,7 @@ exports.builder = (yargs) => (
     .option('services', {
       type: 'array',
       description: 'enable listed services',
-      choices: Object.keys(require('./test_cmds/auto-compose').SERVICE_MAP),
+      choices: Object.keys(autoComposeCommand.SERVICE_MAP),
     })
     .option('docker_compose_version', {
       alias: 'dcv',
@@ -136,16 +141,6 @@ exports.builder = (yargs) => (
       default: [],
       array: true,
     })
-    .option('nycCoverage', {
-      describe: 'set to --no-nycCoverage to disable it',
-      boolean: true,
-      default: true,
-    })
-    .option('nycReport', {
-      describe: 'set to --no-nycReport to disable Nyc report generation',
-      boolean: true,
-      default: true,
-    })
     .option('test_args', {
       describe: 'extra arguments for test framework',
       string: true,
@@ -211,4 +206,5 @@ exports.builder = (yargs) => (
     })
     .help()
 );
-exports.handler = () => {};
+
+export const handler = () => {};

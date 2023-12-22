@@ -1,14 +1,17 @@
-const execa = require('execa');
-const { resolve } = require('path');
+import { execa } from 'execa';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-exports.command = 'install';
-exports.desc = 'install husky, performs auto migration';
-exports.handler = async () => {
-  const proc = execa('node', [resolve(__dirname, '../../scripts/setup-semantic-release.js')], { all: true, buffer: false });
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export const command = 'install';
+export const desc = 'install husky, performs auto migration';
+export const handler = async () => {
+  const proc = execa('node', [resolve(__dirname, '../../scripts/setup-semantic-release.mjs')], { all: true, buffer: false });
   proc.all.pipe(process.stdout);
   await proc;
 };
-exports.builder = (yargs) => {
+export const builder = (yargs) => {
   return yargs
     .strict(false)
     .help();

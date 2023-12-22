@@ -1,31 +1,39 @@
 #!/usr/bin/env node
 
-/* eslint-disable import/no-dynamic-require, no-nested-ternary */
-const path = require('path');
-const fs = require('fs');
-const findUp = require('find-up');
-const readPkg = require('read-pkg');
-const assert = require('assert');
+import path from 'node:path';
+import fs from 'node:fs';
+import { readPackage } from 'read-pkg';
+import assert from 'node:assert/strict';
+import { cosmiconfig } from 'cosmiconfig';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
-const parentProject = readPkg.sync();
+import * as binCommand from './cmds/bin.js';
+import * as dockerCommand from './cmds/docker.js';
+import * as getConfigCommand from './cmds/get-config.js';
+import * as installCommand from './cmds/install.js';
+import * as testCommand from './cmds/test.js';
+
+const parentProject = await readPackage();
 assert(parentProject && parentProject.version, 'Must contain package.json in the current dir');
 
 // get configPath if it's there
-const configPath = findUp.sync(['.mdeprc', '.mdeprc.js', '.mdeprc.json']);
-const config = configPath
-  ? configPath.endsWith('.js')
-    ? require(configPath)
-    : JSON.parse(fs.readFileSync(configPath))
-  : {};
+const configExplorer = cosmiconfig('mdep', { searchStrategy: 'project' });
+const configResult = await configExplorer.search();
+const config = configResult !== null && !configResult.isEmpty ? configResult.config : {};
 
-require('yargs')
+yargs(hideBin(process.argv))
   .version(false)
-  .commandDir('cmds')
+  .command(binCommand)
+  .command(dockerCommand)
+  .command(getConfigCommand)
+  .command(installCommand)
+  .command(testCommand)
   .demandCommand()
   .option('node', {
     alias: 'n',
     describe: 'node version to use when building',
-    default: '18',
+    default: '20',
     type: 'string',
   })
   .option('env', {
@@ -68,4 +76,4 @@ require('yargs')
   .config(config)
   .help()
   .strict()
-  .argv;
+  .parse();

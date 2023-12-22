@@ -1,11 +1,10 @@
 /* eslint-disable no-template-curly-in-string */
 
-module.exports = {
-  nycCoverage: false,
-  test_framework: 'jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --maxWorkers=50% --colors',
+export default {
+  test_framework: 'c8 node --test',
   tests: '__tests__/*.js',
   auto_compose: true,
-  node: '18',
+  node: '20.10',
   tester_flavour: 'chrome-tester',
   mirror: process.platform !== 'darwin',
   services: [
@@ -31,5 +30,7 @@ module.exports = {
   },
   euser: 'root',
   tuser: 'node',
-  arbitrary_exec: ['apk add git'],
+  arbitrary_exec: [
+    'apk add git',
+  ],
 };

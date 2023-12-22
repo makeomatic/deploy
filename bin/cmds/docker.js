@@ -3,13 +3,19 @@
  * @type {String}
  */
 
-const assert = require('assert');
+import * as buildCommand from './docker_cmds/build.js';
+import * as pushCommand from './docker_cmds/push.js';
+import * as releaseCommand from './docker_cmds/release.js';
+import * as tagCommand from './docker_cmds/tag.js';
 
-exports.called = false;
-exports.command = 'docker';
-exports.desc = 'manages docker lifecycle';
-exports.builder = (yargs) => (
-  yargs.commandDir('docker_cmds')
+export const command = 'docker';
+export const desc = 'manages docker lifecycle';
+export const builder = (yargs) => (
+  yargs
+    .command(buildCommand)
+    .command(pushCommand)
+    .command(releaseCommand)
+    .command(tagCommand)
     .option('include_node', {
       alias: 'in',
       describe: 'includes node version in the tag',
@@ -42,29 +48,3 @@ exports.builder = (yargs) => (
     .strict(false)
     .help()
 );
-exports.handler = (argv) => {
-  if (exports.called) return;
-
-  assert.ok(typeof argv.version === 'string', `version is ${argv.version}`);
-
-  // prepares variables
-  argv.base = `${argv.repository}/${argv.project}`;
-  argv.baseTag = argv.include_node ? `${argv.node}-${argv.version}` : argv.version;
-  argv.mainTag = `${argv.base}:${argv.baseTag}`;
-  argv.tags = argv.extra_tags.map((tag) => (
-    `${argv.base}:${tag}`
-  ));
-
-  // adds extra tag
-  if (argv.include_node) {
-    argv.tags.push(`${argv.base}:${argv.node}`);
-  }
-
-  // adds :latest tag
-  if (argv.tag_latest) {
-    argv.tags.push(`${argv.base}:latest`);
-  }
-
-  // a little bit hacky
-  exports.called = true;
-};

@@ -1,27 +1,28 @@
-const Promise = require('bluebird');
+import test, { describe, after } from 'node:test';
+import assert from 'node:assert/strict';
+import Chrome, { captureScreenshot } from '../bin/chrome.js';
 
 describe('chrome helpers', () => {
-  const Chrome = require('../bin/chrome');
   let chrome;
 
-  it('launches chrome', async () => {
+  test('launches chrome', async () => {
     const connection = await Chrome();
-    expect(connection.launcher).toBeDefined();
-    expect(connection.protocol).toBeDefined();
-    expect(connection.close).toBeDefined();
+    assert(connection.launcher);
+    assert(connection.protocol);
+    assert(connection.close);
     chrome = connection;
   });
 
-  it('renders facebook', async () => {
+  test('renders facebook', async () => {
     const context = chrome;
     const { Page } = context.protocol;
 
     Page.navigate({ url: 'https://facebook.com' });
     await Page.loadEventFired();
-    await Promise.bind(context).then(Chrome.captureScreenshot);
+    await captureScreenshot.call(context);
   }, 10000);
 
-  afterAll(async () => (
+  after(async () => (
     chrome ? chrome.close() : null
   ));
 });
