@@ -240,11 +240,13 @@ export const handler = async (argv) => {
     // ensure same user exists in container
     await checkOrCreate(uid);
 
-    if (argv.euser) {
+    // because 0 is falsy :(
+    if (argv.euser != null) {
       argv.euser = await checkOrCreate(argv.euser);
     }
 
-    if (argv.tuser) {
+    // because 0 is falsy :(
+    if (argv.tuser != null) {
       argv.tuser = await checkOrCreate(argv.tuser);
     }
   }
