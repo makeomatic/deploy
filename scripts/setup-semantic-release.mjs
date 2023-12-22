@@ -150,7 +150,7 @@ for (const [scriptName, name, holder] of scripts) {
 }
 
 await copyConfiguration('.releaserc.json', ['.releaserc.js']);
-await copyConfiguration('.commitlintrc.js', ['.commitlintrc.cjs', '.commitlintrc.json', '.commitlintrc.mjs']);
+await copyConfiguration('.commitlintrc.cjs', ['.commitlintrc.cjs', '.commitlintrc.json', '.commitlintrc.mjs']);
 
 if (!(await hasDir('.husky/_'))) {
   console.log('⚠️ husky not initialized yet');

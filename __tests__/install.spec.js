@@ -86,7 +86,7 @@ describe('(pnpm) test installing the package', () => {
 
     test('releaserc & commitlint copied over', async () => {
       assert.equal((await fs.stat('.releaserc.json')).isFile(), true);
-      assert.equal((await fs.stat('.commitlintrc.js')).isFile(), true);
+      assert.equal((await fs.stat('.commitlintrc.cjs')).isFile(), true);
     });
 
     test('on reinstall doesnt overwrite existing .releaserc.js(on)', async () => {
@@ -96,10 +96,10 @@ describe('(pnpm) test installing the package', () => {
       assert.equal(await fs.readFile('.releaserc.json', 'utf8'), 'overwrite');
     }, 240000);
 
-    test('on reinstall doesnt overwrite existing .commitlintrc.js', async () => {
-      await fs.writeFile('.commitlintrc.js', 'overwrite');
+    test('on reinstall doesnt overwrite existing .commitlintrc.cjs', async () => {
+      await fs.writeFile('.commitlintrc.cjs', 'overwrite');
       await execa('pnpm', ['add', tarball]);
-      assert.equal(await fs.readFile('.commitlintrc.js', 'utf8'), 'overwrite');
+      assert.equal(await fs.readFile('.commitlintrc.cjs', 'utf8'), 'overwrite');
     }, 240000);
   });
 
@@ -151,6 +151,7 @@ describe('(pnpm) test installing the package', () => {
 
   describe('installs globally', () => {
     test('is able to install package globally', async () => {
+      await $`pnpm config set global-bin-dir "/usr/local/bin"`;
       await execa('pnpm', ['-g', 'add', tarball]);
     }, 240000);
 

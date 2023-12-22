@@ -78,6 +78,6 @@
     ".husky/*",
     "!.husky/_",
     ".releaserc.json",
-    ".commitlintrc.js"
+    ".commitlintrc.cjs"
   ]
 }

@@ -209,8 +209,8 @@ export const handler = async (argv) => {
     console.log(`checking container user ${uid}`);
 
     try {
-      const { stdout } = await dockerExec('id', ['-un', uid], { user: 'root' });
-      return stdout;
+      const { stdout } = await dockerExec('getent', ['passwd', uid], { user: 'root', stream: false });
+      return stdout.split(':', 1)[0];
     } catch (e) {
       return false;
     }
@@ -220,7 +220,7 @@ export const handler = async (argv) => {
     console.log(`create user "${name}"`);
 
     const userExtraArgs = uid ? ['-u', uid, '-g', uid] : [];
-    await dockerExec('adduser', ['-D', ...userExtraArgs, name], { user: 'root' });
+    await dockerExec('adduser', ['-D', ...userExtraArgs, name], { user: 'root', stream: false });
   }
 
   async function checkOrCreate(uid) {

@@ -1,6 +1,8 @@
 /* eslint-disable no-template-curly-in-string */
 import { userInfo } from 'node:os';
 
+const { uid } = userInfo();
+
 export default {
   test_framework: 'c8 node --test',
   tests: '__tests__/*.js',
@@ -29,6 +31,9 @@ export default {
     },
   },
   euser: 0,
-  tuser: userInfo().uid,
-  arbitrary_exec: ['apk add git'],
+  tuser: uid,
+  arbitrary_exec: [
+    'apk add git',
+    `addgroup \`getent passwd ${uid} | cut -d: -f1\` node`, // so that global install works in tests
+  ],
 };
