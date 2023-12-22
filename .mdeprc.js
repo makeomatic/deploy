@@ -32,5 +32,7 @@ export default {
   tuser: 'node',
   arbitrary_exec: [
     'apk add git',
+    'mkdir -p /src/coverage',
+    'chown -R node:node /src/coverage',
   ],
 };
