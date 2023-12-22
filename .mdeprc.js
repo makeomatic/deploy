@@ -1,4 +1,5 @@
 /* eslint-disable no-template-curly-in-string */
+import { userInfo } from 'node:os';
 
 export default {
   test_framework: 'c8 node --test',
@@ -6,7 +7,6 @@ export default {
   auto_compose: true,
   node: '20.10',
   tester_flavour: 'chrome-tester',
-  mirror: process.platform !== 'darwin',
   services: [
     'redisSentinel',
     'redisCluster',
@@ -29,10 +29,6 @@ export default {
     },
   },
   euser: 'root',
-  tuser: 'node',
-  arbitrary_exec: [
-    'apk add git',
-    'mkdir -p /src/coverage',
-    'chown -R node:node /src/coverage',
-  ],
+  tuser: userInfo().username,
+  arbitrary_exec: ['apk add git'],
 };

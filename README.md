@@ -125,8 +125,6 @@ Options:
       --report_dir                     report dir for coverage
                                                          [default: "./coverage"]
       --test_framework                 test framework to use  [default: "mocha"]
-      --mirror-npm, --mirror           enables local npm mirror to speed up inst
-                                       alling packages                 [boolean]
       --root                           binary root path on the tester
                                              [default: "/src/node_modules/.bin"]
   -r, --rebuild                        list modules to rebuild during testing

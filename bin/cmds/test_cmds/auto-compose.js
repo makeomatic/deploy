@@ -44,11 +44,6 @@ async function tester(compose, argv) {
     delete testerConfig.user;
   }
 
-  if (argv.mirror) {
-    testerConfig.environment.NPM_CONFIG_REGISTRY = 'http://verdaccio:4873';
-    testerConfig.environment.YARN_REGISTRY = 'http://verdaccio:4873';
-  }
-
   if (argv.http) {
     await fs.mkdir(socketDir, { recursive: true, mode: 0o0755 });
     volumes.push(`${socketDir}:/var/run`);
@@ -192,18 +187,6 @@ export const handler = async (argv) => {
   compose.networks = {};
   compose.services = {};
   compose.volumes = {};
-
-  if (argv.mirror) {
-    debug('adding mirror');
-    compose.services.verdaccio = {
-      image: 'verdaccio/verdaccio:5',
-      // eslint-disable-next-line no-template-curly-in-string
-      volumes: ['${PWD}/node_modules:/verdaccio/plugins:ro'],
-      environment: {
-        NODE_ENV: 'production',
-      },
-    };
-  }
 
   if (argv.isMutagen) {
     compose.volumes[argv.mutagenVolumeName] = {};

@@ -104,11 +104,6 @@ export const builder = (yargs) => (
       describe: 'test framework to use',
       default: 'mocha',
     })
-    .option('mirror-npm', {
-      alias: 'mirror',
-      type: 'boolean',
-      describe: 'enables local npm mirror to speed up installing packages',
-    })
     .option('root', {
       describe: 'binary root path on the tester',
       default: '/src/node_modules/.bin',
