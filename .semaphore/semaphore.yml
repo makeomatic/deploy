@@ -19,7 +19,7 @@ global_job_config:
       - set -e
       - sem-version node 20.10
       - corepack enable
-      - corepack install pnpm@8.x
+      - corepack install --global pnpm@8.x
       - checkout
       - cache restore node-$(checksum pnpm-lock.yaml)
       - pnpm i --prefer-offline
