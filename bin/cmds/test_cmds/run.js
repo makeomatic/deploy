@@ -151,7 +151,7 @@ export const handler = async (argv) => {
 
       if (res.statusCode !== 200) {
         const resp = await res.body.text();
-        console.log('failed to exec query');
+        console.log(`failed to exec query: ${body}`);
         console.log(resp);
         process.exit(128);
       }
