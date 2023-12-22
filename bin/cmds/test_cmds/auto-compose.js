@@ -54,7 +54,7 @@ async function tester(compose, argv) {
     volumes.push(`${socketDir}:/var/run`);
     volumes.push(`${resolve(__dirname, '../../..')}:${workingDir}/node_modules/@makeomatic/deploy`);
     if (testerConfig.command === defaultCmd) {
-      testerConfig.command = `node ${workingDir}/node_modules/@makeomatic/deploy/bin/runner.js`;
+      testerConfig.command = `node ${workingDir}/node_modules/@makeomatic/deploy/bin/runner.mjs`;
     }
   }
 

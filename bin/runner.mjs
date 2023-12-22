@@ -1,10 +1,12 @@
+#!/usr/bin/env node
+
 /**
  * port used to launch test runner
  */
 import { PassThrough, compose } from 'stream';
 import Fastify from 'fastify';
 import { Type } from '@sinclair/typebox';
-import { execa } from 'execa';
+import { execa, execaCommand } from 'execa';
 import { serializeError } from 'serialize-error';
 import hyperid from 'hyperid';
 import Pino from 'pino';
@@ -42,7 +44,7 @@ fastify.post('/exec', { schema: { body: Command } }, async (request, reply) => {
 
   const subprocess = args
     ? execa(file, args, opts)
-    : execa.command(file, opts);
+    : execaCommand(file, opts);
 
   reply.type('text/plain');
 

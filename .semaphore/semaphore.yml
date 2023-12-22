@@ -23,7 +23,7 @@ global_job_config:
       - checkout
       - cache restore node-$(checksum pnpm-lock.yaml)
       - pnpm i --prefer-offline
-      - cache store node-$(checksum pnpm-lock.yaml) ~/.pnpm-store
+      - cache store node-$(checksum pnpm-lock.yaml) $(pnpm store path)
 
 blocks:
   - name: tests
