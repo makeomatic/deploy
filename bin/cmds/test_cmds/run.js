@@ -205,12 +205,12 @@ export const handler = async (argv) => {
     };
   }
 
-  async function checkUser(name) {
-    console.log(`checking container user ${name}`);
+  async function checkUser(uid) {
+    console.log(`checking container user ${uid}`);
 
     try {
-      await dockerExec('getent', ['passwd', name], { user: 'root' });
-      return true;
+      const { stdout } = await dockerExec('id', ['-un', uid], { user: 'root' });
+      return stdout;
     } catch (e) {
       return false;
     }
@@ -223,19 +223,29 @@ export const handler = async (argv) => {
     await dockerExec('adduser', ['-D', ...userExtraArgs, name], { user: 'root' });
   }
 
+  async function checkOrCreate(uid) {
+    let username = await checkUser(uid);
+
+    if (!username) {
+      username = `tester-${uid}`;
+      await createUser(username, uid);
+    }
+
+    return username;
+  }
+
   if (!argv.isRootless) {
     const uid = process.getuid();
 
-    if (!(await checkUser(uid))) {
-      await createUser('tester', uid);
+    // ensure same user exists in container
+    await checkOrCreate(uid);
+
+    if (argv.ruser) {
+      argv.ruser = await checkOrCreate(argv.ruser);
     }
 
-    if (argv.ruser && !(await checkUser(argv.ruser))) {
-      await createUser(argv.ruser);
-    }
-
-    if (argv.tuser && !(await checkUser(argv.tuser))) {
-      await createUser(argv.tuser);
+    if (argv.tuser) {
+      argv.tuser = await checkOrCreate(argv.tuser);
     }
   }
 

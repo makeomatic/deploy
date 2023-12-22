@@ -151,8 +151,8 @@ Options:
                                     [string] [default: "makeomatic-deploy-code"]
       --mutagen-volume-external        set as external to avoid recreating each
                                        time           [boolean] [default: false]
-      --exec-user, --euser             user to run setup commands with  [string]
-      --test-user, --tuser             user to run test commands with   [string]
+      --exec-user, --euser             user to run setup commands with  [number]
+      --test-user, --tuser             user to run test commands with   [number]
       --in-one, --in_one               runs all tests in 1 test runner
                                                       [boolean] [default: false]
       --env-file, --env_file           .env file for docker-compose     [string]

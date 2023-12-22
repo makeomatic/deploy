@@ -28,7 +28,7 @@ export default {
       },
     },
   },
-  euser: 'root',
-  tuser: userInfo().username,
+  euser: 0,
+  tuser: userInfo().uid,
   arbitrary_exec: ['apk add git'],
 };
