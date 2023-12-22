@@ -317,7 +317,7 @@ export const handler = async (argv) => {
 
   for (const cmd of argv.arbitrary_exec) {
     // eslint-disable-next-line no-await-in-loop
-    await dockerExec(cmd, undefined, { user: argv.euser, shell: true });
+    await dockerExec(cmd, undefined, { user: argv.euser, stdio: 'inherit' });
   }
 
   const limit = pLimit(argv.sort ? 1 : (argv.parallel || 1));
