@@ -20,6 +20,7 @@ const Command = Type.Strict(Type.Object({
   args: Type.Optional(Type.Array(Type.String({ minLength: 1 }))),
   timeout: Type.Optional(Type.Number({ default: 0 })),
   user: Type.Optional(Type.String()),
+  shell: Type.Optional(Type.Boolean({ default: false })),
 }));
 
 const fastify = Fastify({
@@ -32,8 +33,8 @@ const uidCache = Object.create(null);
 const hasOwnProperty = Object.prototype.hasOwnProperty.bind(uidCache);
 
 fastify.post('/exec', { schema: { body: Command } }, async (request, reply) => {
-  const { file, args, timeout, user } = request.body;
-  const opts = { all: true, buffer: false, timeout };
+  const { file, args, timeout, user, shell } = request.body;
+  const opts = { all: true, buffer: false, timeout, shell };
 
   if (user) {
     if (!hasOwnProperty(user)) {
