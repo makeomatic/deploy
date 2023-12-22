@@ -4,11 +4,9 @@ import fs from 'node:fs/promises';
 import hyperid from 'hyperid';
 import merge from 'lodash.merge';
 import path, { resolve, dirname } from 'node:path';
-import _debug from 'debug';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const debug = _debug('test');
 
 /**
  * Prepares tester declaration
