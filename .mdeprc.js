@@ -34,6 +34,8 @@ export default {
   tuser: uid,
   arbitrary_exec: [
     'apk add git',
-    ['/bin/sh', '-c', `addgroup $(getent passwd ${uid} | cut -d: -f1) node`], // so that global install works in tests
+    process.env.flavour === 'http'
+      ? ['/bin/sh', '-c', `addgroup $(getent passwd ${uid} | cut -d: -f1) node`] // child_process.exec
+      : ['addgroup', `$(getent passwd ${uid} | cut -d: -f1)`, 'node'], // docker exec /bin/sh -c "<command>"
   ],
 };
