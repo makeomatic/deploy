@@ -1,95 +1,12 @@
-/* eslint-disable no-use-before-define, no-template-curly-in-string */
-const jsYaml = require('js-yaml');
-const os = require('os');
-const fs = require('fs/promises');
-const hyperid = require('hyperid');
-const merge = require('lodash.merge');
-const path = require('path');
-const { resolve } = require('path');
-const debug = require('debug')('test');
+import jsYaml from 'js-yaml';
+import os from 'node:os';
+import fs from 'node:fs/promises';
+import hyperid from 'hyperid';
+import merge from 'lodash.merge';
+import path, { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const SERVICE_MAP = {
-  redis,
-  redisCluster,
-  redisSentinel,
-  postgres,
-  rabbitmq,
-  elasticsearch,
-  cassandra,
-  couchdb,
-};
-
-exports.SERVICE_MAP = SERVICE_MAP;
-exports.command = 'compose';
-exports.desc = 'prepares docker-compose file based on config';
-exports.handler = async (argv) => {
-  const getId = hyperid({ fixedLength: true, urlSafe: true });
-
-  // Header of the file
-  const compose = {};
-  compose.version = argv.acv;
-  compose.networks = {};
-  compose.services = {};
-  compose.volumes = {};
-
-  if (argv.mirror) {
-    debug('adding mirror');
-    compose.services.verdaccio = {
-      image: 'verdaccio/verdaccio:5',
-      volumes: ['${PWD}/node_modules:/verdaccio/plugins:ro'],
-      environment: {
-        NODE_ENV: 'production',
-      },
-    };
-  }
-
-  if (argv.isMutagen) {
-    compose.volumes[argv.mutagenVolumeName] = {};
-    if (argv.mutagenVolumeExternal) {
-      compose.volumes[argv.mutagenVolumeName].name = argv.mutagenVolumeName;
-    }
-
-    compose['x-mutagen'] = {
-      sync: {
-        defaults: {
-          ignore: { vcs: true },
-          mode: 'two-way-resolved',
-        },
-        code: {
-          alpha: argv.mutagenDir,
-          beta: `volume://${argv.mutagenVolumeName}`,
-        },
-      },
-    };
-  }
-
-  // Identification
-  if (Array.isArray(argv.services) && argv.services.length) {
-    for (const service of argv.services) {
-      const ctor = SERVICE_MAP[service];
-      if (ctor === undefined) {
-        throw new Error(`no support for ${service}, please add it to @makeomatic/deploy`);
-      }
-
-      ctor(compose, argv);
-    }
-  }
-
-  // add default tester service
-  await tester(compose, argv);
-
-  // finalize and push out to tmp
-  const dir = os.tmpdir();
-  const filename = `docker-compose.${getId()}.yml`;
-  const location = [dir, argv.project, filename].join(path.sep);
-
-  // write out the file, ensure dir exists
-  await fs.mkdir(`${dir}/${argv.project}`, { recursive: true, mode: 0o0770 });
-  await fs.writeFile(location, jsYaml.dump(compose));
-
-  // rewrite location of docker-compose
-  argv.docker_compose = location;
-};
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /**
  * Prepares tester declaration
@@ -111,6 +28,7 @@ async function tester(compose, argv) {
     command: defaultCmd,
   }, argv.extras.tester);
   const workingDir = testerConfig.working_dir;
+  // eslint-disable-next-line no-template-curly-in-string
   const sourceDir = argv.mutagenDir || '${PWD}';
   const mutagenWorkingDir = argv.mutagenWorkingDir || workingDir;
   const workingVolume = `${sourceDir}:${mutagenWorkingDir}`;
@@ -124,17 +42,12 @@ async function tester(compose, argv) {
     delete testerConfig.user;
   }
 
-  if (argv.mirror) {
-    testerConfig.environment.NPM_CONFIG_REGISTRY = 'http://verdaccio:4873';
-    testerConfig.environment.YARN_REGISTRY = 'http://verdaccio:4873';
-  }
-
   if (argv.http) {
     await fs.mkdir(socketDir, { recursive: true, mode: 0o0755 });
     volumes.push(`${socketDir}:/var/run`);
     volumes.push(`${resolve(__dirname, '../../..')}:${workingDir}/node_modules/@makeomatic/deploy`);
     if (testerConfig.command === defaultCmd) {
-      testerConfig.command = `node ${workingDir}/node_modules/@makeomatic/deploy/bin/runner.js`;
+      testerConfig.command = `node ${workingDir}/node_modules/@makeomatic/deploy/bin/runner.mjs`;
     }
   }
 
@@ -160,7 +73,7 @@ function redisCluster(compose, argv) {
 
 function redis(compose, argv) {
   compose.services.redis = merge({
-    image: 'redis/redis-stack-server:6.2.6-v7',
+    image: 'redis/redis-stack-server:6.2.6-v10',
     hostname: 'redis',
     expose: ['6379'],
   }, argv.extras.redis);
@@ -249,3 +162,74 @@ function couchdb(composer, argv) {
     },
   }, argv.extras.couchdb);
 }
+
+export const SERVICE_MAP = {
+  redis,
+  redisCluster,
+  redisSentinel,
+  postgres,
+  rabbitmq,
+  elasticsearch,
+  cassandra,
+  couchdb,
+};
+
+export const command = 'compose';
+export const desc = 'prepares docker-compose file based on config';
+export const handler = async (argv) => {
+  const getId = hyperid({ fixedLength: true, urlSafe: true });
+
+  // Header of the file
+  const compose = {};
+  compose.version = argv.acv;
+  compose.networks = {};
+  compose.services = {};
+  compose.volumes = {};
+
+  if (argv.isMutagen) {
+    compose.volumes[argv.mutagenVolumeName] = {};
+    if (argv.mutagenVolumeExternal) {
+      compose.volumes[argv.mutagenVolumeName].name = argv.mutagenVolumeName;
+    }
+
+    compose['x-mutagen'] = {
+      sync: {
+        defaults: {
+          ignore: { vcs: true },
+          mode: 'two-way-resolved',
+        },
+        code: {
+          alpha: argv.mutagenDir,
+          beta: `volume://${argv.mutagenVolumeName}`,
+        },
+      },
+    };
+  }
+
+  // Identification
+  if (Array.isArray(argv.services) && argv.services.length) {
+    for (const service of argv.services) {
+      const ctor = SERVICE_MAP[service];
+      if (ctor === undefined) {
+        throw new Error(`no support for ${service}, please add it to @makeomatic/deploy`);
+      }
+
+      ctor(compose, argv);
+    }
+  }
+
+  // add default tester service
+  await tester(compose, argv);
+
+  // finalize and push out to tmp
+  const dir = os.tmpdir();
+  const filename = `docker-compose.${getId()}.yml`;
+  const location = [dir, argv.project, filename].join(path.sep);
+
+  // write out the file, ensure dir exists
+  await fs.mkdir(`${dir}/${argv.project}`, { recursive: true, mode: 0o0770 });
+  await fs.writeFile(location, jsYaml.dump(compose));
+
+  // rewrite location of docker-compose
+  argv.docker_compose = location;
+};

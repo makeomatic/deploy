@@ -1,8 +1,8 @@
-const get = require('lodash.get');
+import get from 'lodash.get';
 
-exports.command = 'get-config [path]';
-exports.desc = 'return mdeprc properties';
-exports.builder = (yargs) => {
+export const command = 'get-config [path]';
+export const desc = 'return mdeprc properties';
+export const builder = (yargs) => {
   return yargs
     .positional('path', {
       describe: 'path in config',
@@ -15,6 +15,6 @@ exports.builder = (yargs) => {
     .strict(false)
     .help();
 };
-exports.handler = (argv) => {
+export const handler = (argv) => {
   console.info(get(argv, argv.path)); // eslint-disable-line no-console
 };

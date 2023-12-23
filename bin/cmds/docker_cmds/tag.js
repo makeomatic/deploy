@@ -1,17 +1,18 @@
 /**
  * Tags docker images
  */
-const assert = require('assert');
-const { exec } = require('shelljs');
+import { $ } from 'execa';
+import { handler as dockerHandler } from './_handler.js';
 
-exports.command = 'tag';
-exports.desc = 'tags built docker image';
-exports.handler = (argv) => {
-  require('../docker').handler(argv);
+export const command = 'tag';
+export const desc = 'tags built docker image';
+export const handler = async (argv) => {
+  dockerHandler(argv);
 
   const { mainTag, tags } = argv;
 
-  tags.forEach((tag) => (
-    assert.equal(exec(`docker tag ${mainTag} ${tag}`).code, 0, 'failed to tag')
-  ));
+  for (const tag of tags) {
+    // eslint-disable-next-line no-await-in-loop
+    await $`docker tag ${mainTag} ${tag}`;
+  }
 };

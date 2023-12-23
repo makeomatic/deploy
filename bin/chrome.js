@@ -1,13 +1,15 @@
-const Promise = require('bluebird');
-const chrome = require('chrome-remote-interface');
-const fs = require('fs');
-const is = require('is');
-const assert = require('assert');
-const { Launcher } = require('chrome-launcher');
-const EventEmitter = require('events');
-const rimraf = require('rimraf');
-const pino = require('pino')();
+import chrome from 'chrome-remote-interface';
+import fs from 'node:fs/promises';
+import is from 'is';
+import assert from 'node:assert/strict';
+import { Launcher } from 'chrome-launcher';
+import EventEmitter from 'events';
+import { rimraf } from 'rimraf';
+import Pino from 'pino';
+import { once } from 'node:events';
+import { setTimeout } from 'node:timers/promises';
 
+const pino = Pino();
 const _SIGINT = 'SIGINT';
 const _SIGINT_EXIT_CODE = 130;
 
@@ -15,7 +17,7 @@ const _SIGINT_EXIT_CODE = 130;
  * Launches a debugging instance of Chrome on port 9222.
  * @return {Promise<{ chrome: ChromeLauncher, protocol: ChromeDebugProtocol, close: Function }>}
  */
-function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
+async function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
   const settings = {
     rimraf,
     logLevel: 'silent',
@@ -41,7 +43,7 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
     // Kill spawned Chrome process in case of ctrl-C.
     if (settings.handleSIGINT) {
       process.on(_SIGINT, async () => {
-        await instance.kill();
+        instance.kill();
         process.exit(_SIGINT_EXIT_CODE);
       });
     }
@@ -55,148 +57,135 @@ function launchChrome(opts = {}, moduleOverrides = { rimraf }) {
     };
   };
 
-  const initProtocol = (launcher) => Promise.props({
-    launcher,
-    protocol: chrome({ port: launcher.port }),
+  const launcher = await initChrome();
+  const protocol = await chrome({ port: launcher.port });
+  const { Page, Network, Runtime, DOM, Console } = protocol;
+
+  protocol.idleDelay = 500;
+  protocol.evictionDelay = 5000;
+  protocol.ee = new EventEmitter();
+  protocol.pending = new Map();
+  protocol.timeouts = new Map();
+
+  let isIdleTimer;
+  const verifyIsIdle = () => {
+    if (protocol.pending.size === 0) {
+      pino.debug('idle', 'completed');
+      protocol.ee.emit('idle');
+    } else {
+      const requests = [];
+      // eslint-disable-next-line no-restricted-syntax
+      for (const v of protocol.pending.values()) {
+        requests.push(v.request.url);
+      }
+
+      pino.debug('pendingRequest', `[${requests.length}]`, requests.join(', '));
+    }
+  };
+
+  const onLoad = (params, evicted) => {
+    const originalRequest = protocol.pending.get(params.requestId);
+
+    // might fire twice with failed/finished handlers
+    pino.debug(
+      evicted ? 'evicted' : 'responseReceived',
+      `[pending=${protocol.pending.size}]`,
+      originalRequest && originalRequest.request.url
+    );
+
+    // remove request from pending
+    protocol.pending.delete(params.requestId);
+
+    // clear timeouts
+    if (protocol.timeouts.has(params.requestId)) {
+      clearTimeout(protocol.timeouts.get(params.requestId));
+      protocol.timeouts.delete(params.requestId);
+    }
+
+    clearTimeout(isIdleTimer);
+    isIdleTimer = setTimeout(verifyIsIdle, protocol.idleDelay);
+  };
+
+  Network.requestWillBeSent((params) => {
+    pino.debug('requestWillBeSent', `[pending=${protocol.pending.size}]`, params.request.url);
+
+    protocol.pending.set(params.requestId, params);
+    protocol.timeouts.set(params.requestId, setTimeout(onLoad, protocol.evictionDelay, params, true));
+
+    clearTimeout(isIdleTimer);
+    isIdleTimer = setTimeout(verifyIsIdle, protocol.idleDelay);
   });
 
-  return Promise
-    .resolve(initChrome())
-    .then(initProtocol)
-    .then(({ protocol, launcher }) => {
-      const {
-        Page, Network, Runtime, DOM, Console,
-      } = protocol;
+  Network.loadingFailed(onLoad);
+  Network.loadingFinished(onLoad);
 
-      protocol.idleDelay = 500;
-      protocol.evictionDelay = 5000;
-      protocol.ee = new EventEmitter();
-      protocol.pending = new Map();
-      protocol.timeouts = new Map();
+  Console.messageAdded((params) => {
+    pino.debug('console', params.message.text);
+  });
 
-      let isIdle;
-      const verifyIsIdle = () => {
-        if (protocol.pending.size === 0) {
-          pino.debug('idle', 'completed');
-          protocol.ee.emit('idle');
-        } else {
-          const requests = [];
-          // eslint-disable-next-line no-restricted-syntax
-          for (const v of protocol.pending.values()) {
-            requests.push(v.request.url);
-          }
+  await Promise.all([
+    Page.enable(),
+    Network.enable(),
+    Runtime.enable(),
+    DOM.enable(),
+    Console.enable(),
+  ]);
 
-          pino.debug('pendingRequest', `[${requests.length}]`, requests.join(', '));
-        }
-      };
+  return {
+    launcher,
+    protocol,
+    close() {
+      for (const t of protocol.timeouts.values()) {
+        clearTimeout(t);
+      }
 
-      const onLoad = (params, evicted) => {
-        const originalRequest = protocol.pending.get(params.requestId);
+      clearTimeout(isIdleTimer);
+      isIdleTimer = null;
 
-        // might fire twice with failed/finished handlers
-        pino.debug(
-          evicted ? 'evicted' : 'responseReceived',
-          `[pending=${protocol.pending.size}]`,
-          originalRequest && originalRequest.request.url
-        );
-
-        // remove request from pending
-        protocol.pending.delete(params.requestId);
-
-        // clear timeouts
-        if (protocol.timeouts.has(params.requestId)) {
-          clearTimeout(protocol.timeouts.get(params.requestId));
-          protocol.timeouts.delete(params.requestId);
-        }
-
-        clearTimeout(isIdle);
-        isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
-      };
-
-      Network.requestWillBeSent((params) => {
-        pino.debug('requestWillBeSent', `[pending=${protocol.pending.size}]`, params.request.url);
-
-        protocol.pending.set(params.requestId, params);
-        protocol.timeouts.set(params.requestId, setTimeout(onLoad, protocol.evictionDelay, params, true));
-
-        clearTimeout(isIdle);
-        isIdle = setTimeout(verifyIsIdle, protocol.idleDelay);
-      });
-
-      Network.loadingFailed(onLoad);
-      Network.loadingFinished(onLoad);
-
-      Console.messageAdded((params) => {
-        pino.debug('console', params.message.text);
-      });
-
-      return Promise
-        .all([
-          Page.enable(),
-          Network.enable(),
-          Runtime.enable(),
-          DOM.enable(),
-          Console.enable(),
-        ])
-        .return({
-          launcher,
-          protocol,
-          close() {
-            // eslint-disable-next-line no-restricted-syntax
-            for (const t of protocol.timeouts.values()) {
-              clearTimeout(t);
-            }
-
-            clearTimeout(isIdle);
-            isIdle = null;
-
-            return Promise.all([protocol.close(), launcher.kill()]);
-          },
-        });
-    });
+      return Promise.all([protocol.close(), launcher.kill()]);
+    },
+  };
 }
 
-module.exports = launchChrome;
+export default launchChrome;
+
+export { launchChrome };
 
 /**
  * Inits Chrome for tests
  * @return {Promise<Void>}
  */
-module.exports.init = function initForTests() {
-  return launchChrome().then((params) => {
-    Object.assign(this, params);
-    return null;
-  });
-};
+export async function init() {
+  const params = await launchChrome();
+  Object.assign(this, params);
+}
 
 /**
  * Cleans up chrome & launcher connection
  * @return {Promise<Void>}
  */
-module.exports.clean = function cleanupAfterTests() {
+export function clean() {
   const close = this.close();
   this.launcher = null;
   this.protocol = null;
   this.close = null;
   return close;
-};
+}
 
 /**
  * Captures screenshot
  */
-module.exports.captureScreenshot = function captureScreenshot(any) {
+export async function captureScreenshot(err) {
   const { Page } = this.protocol;
-  return Promise
-    .resolve()
-    .then(() => Page.captureScreenshot({ format: 'jpeg', quality: 70 }))
-    .then((screenshot) => {
-      const filepath = `/src/ss/${Date.now()}.jpeg`;
-      return Promise.fromCallback((next) => fs.writeFile(filepath, Buffer.from(screenshot.data, 'base64'), next));
-    })
-    .tap(() => {
-      if (any instanceof Error) throw any;
-    });
-};
+  const screenshot = await Page.captureScreenshot({ format: 'jpeg', quality: 70 });
+
+  const filepath = `/src/ss/${Date.now()}.jpeg`;
+  await fs.writeFile(filepath, Buffer.from(screenshot.data, 'base64'));
+
+  if (err instanceof Error) {
+    throw err;
+  }
+}
 
 /**
  * Retries fn during timeout
@@ -205,32 +194,40 @@ module.exports.captureScreenshot = function captureScreenshot(any) {
  * @param  {Number}   [timeout=30000]
  * @return {Promise}
  */
-module.exports.retry = function retry(timeout, name, fn) {
-  const repeat = () => (
-    fn().catch((err) => {
-      pino.debug(name, 'failed to find node', err.message);
-      return Promise.delay(500).then(repeat);
-    })
-  );
+export async function retry(timeout, name, fn) {
+  const start = Date.now();
 
-  return repeat().timeout(timeout);
-};
+  while (start + timeout > Date.now()) {
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      return await fn();
+    } catch (err) {
+      pino.debug({ name, err: err.message }, 'failed to find node');
+      // eslint-disable-next-line no-await-in-loop
+      await setTimeout(500);
+    }
+  }
+
+  throw new Error(`${name} - retry faileda after ${timeout}ms`);
+}
 
 /**
  * Resolves promise whenever current window is idle of any requests
  * @param  {Number}  [timeout=30000]
  * @return {Boolean}
  */
-module.exports.isIdle = function isIdle(timeout = 30000) {
-  return Promise.fromCallback((next) => {
-    if (this.protocol.pending.size === 0) {
-      return next();
-    }
+export async function isIdle(timeout = 30000) {
+  if (this.protocol.pending.size === 0) {
+    return;
+  }
 
-    this.protocol.ee.once('idle', next);
-    return setTimeout(next, timeout, new Error(`idle event not fired in ${timeout}`));
-  });
-};
+  await Promise.race([
+    once(this.protocol.ee, 'idle'),
+    setTimeout(timeout, null, { ref: false }).then(() => {
+      throw new Error(`idle event not fired in ${timeout}`);
+    }),
+  ]);
+}
 
 /**
  * Waits for selector to become available
@@ -238,30 +235,28 @@ module.exports.isIdle = function isIdle(timeout = 30000) {
  * @param  {Number} [timeout=30000]
  * @return {Promise}
  */
-module.exports.wait = function wait(_selector, timeout = 30000) {
+export function wait(_selector, timeout = 30000) {
   const { Runtime } = this.protocol;
 
   const selector = is.string(_selector)
     ? `document.querySelector("${_selector}")`
     : `document.querySelector("${_selector.iframe}").contentWindow.document.querySelector("${_selector.el}")`;
 
-  return module.exports
-    .retry(timeout, `Find Node: ${_selector.el || _selector}`, () => (
-      Promise
-        .bind(this)
-        .then(() => Runtime.evaluate({
-          includeCommandLineAPI: true,
-          expression: selector,
-        }))
-        .tap(({ result, exceptionDetails }) => {
-          if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
-          if (!result.objectId) throw new Error('couldnt find node');
-        })
-    ))
-    .tap(() => module.exports.isIdle.call(this))
-    .tap(() => pino.debug('wait', 'completed'))
-    .return(selector);
-};
+  return retry(timeout, `Find Node: ${_selector.el || _selector}`, async () => {
+    const { result, exceptionDetails } = await Runtime.evaluate({
+      includeCommandLineAPI: true,
+      expression: selector,
+    });
+
+    if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
+    if (!result.objectId) throw new Error('couldnt find node');
+
+    await isIdle.call(this);
+    pino.debug('wait completed');
+
+    return selector;
+  });
+}
 
 /**
  * Types text into input
@@ -270,60 +265,47 @@ module.exports.wait = function wait(_selector, timeout = 30000) {
  * @param  {Number} [timeout=30000]
  * @return {Promise}
  */
-module.exports.type = function type(selector, text, timeout = 30000) {
+export async function type(selector, text, timeout = 30000) {
   const { Runtime, Input } = this.protocol;
   const chars = String(text).split('');
 
-  function simulateTyping() {
+  async function simulateTyping() {
     const ch = chars.shift();
     if (ch === undefined) {
-      return Promise.resolve();
+      return;
     }
 
-    pino.debug('typing', 'Sending %s of %s', ch, text);
+    pino.debug('typing, Sending %s of %s', ch, text);
 
-    return Promise
-      .bind(Input)
-      .return({
-        type: 'rawKeyDown',
+    for (const op of ['rawKeyDown', 'char', 'keyUp']) {
+      // eslint-disable-next-line no-await-in-loop
+      await Input.dispatchKeyEvent({
+        type: op,
         text: ch,
         key: ch,
-      })
-      .then(Input.dispatchKeyEvent)
-      .return({
-        type: 'char',
-        text: ch,
-        key: ch,
-      })
-      .then(Input.dispatchKeyEvent)
-      .return({
-        type: 'keyUp',
-        text: ch,
-        key: ch,
-      })
-      .then(Input.dispatchKeyEvent)
-      .delay(100)
-      .then(simulateTyping);
+      });
+    }
+    await setTimeout(100);
+    await simulateTyping();
   }
 
-  return Promise
-    .bind(this, [selector, timeout])
-    .spread(module.exports.wait)
-    .tap((nodeSelector) => module.exports.retry(timeout, 'setNodeValue', () => (
-      Promise
-        .bind(this)
-        .then(() => Runtime.evaluate({
-          includeCommandLineAPI: true,
-          expression: `${nodeSelector}.value = ''; ${nodeSelector}.focus();`,
-        }))
-        .tap(({ result, exceptionDetails }) => {
-          pino.debug('Completed evaluate', result.description);
-          if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
-        })
-        .then(simulateTyping)
-        .catch(module.exports.captureScreenshot)
-    )));
-};
+  const nodeSelector = await wait.call(this, selector, timeout);
+  await retry(timeout, 'setNodeValue', async () => {
+    try {
+      const { result, exceptionDetails } = await Runtime.evaluate({
+        includeCommandLineAPI: true,
+        expression: `${nodeSelector}.value = ''; ${nodeSelector}.focus();`,
+      });
+
+      pino.debug('Completed evaluate', result.description);
+      if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
+
+      await simulateTyping();
+    } catch (err) {
+      await captureScreenshot(err);
+    }
+  });
+}
 
 /**
  * Submits form by clicking on the submit button
@@ -331,55 +313,51 @@ module.exports.type = function type(selector, text, timeout = 30000) {
  * @param  {Number} [timeout=30000]
  * @return {Promise}
  */
-module.exports.submit = function submit(selector, timeout = 30000) {
+export async function submit(selector, timeout = 30000) {
   const { Input, Runtime } = this.protocol;
 
-  return Promise
-    .bind(this, [selector, timeout])
-    .spread(module.exports.wait)
-    .then((nodeSelector) => {
-      const expression = `
-        function getOffset(el) {
-          var parentOffset = { x: 0, y: 0 };
-          if (${selector.iframe} !== undefined) {
-            const offset = document.querySelector("${selector.iframe}").getBoundingClientRect();
-            parentOffset.x = offset.left;
-            parentOffset.y = offset.top;
-          }
+  const nodeSelector = await wait.call(this, selector, timeout);
+  const expression = `
+    function getOffset(el) {
+      var parentOffset = { x: 0, y: 0 };
+      if (${selector.iframe} !== undefined) {
+        const offset = document.querySelector("${selector.iframe}").getBoundingClientRect();
+        parentOffset.x = offset.left;
+        parentOffset.y = offset.top;
+      }
 
-          el = el.getBoundingClientRect();
-          return {
-            x: Math.ceil(el.left + parentOffset.x + el.width / 2 + window.scrollX),
-            y: Math.ceil(el.top + parentOffset.y + el.height / 2 + window.scrollY),
-          };
-        }
+      el = el.getBoundingClientRect();
+      return {
+        x: Math.ceil(el.left + parentOffset.x + el.width / 2 + window.scrollX),
+        y: Math.ceil(el.top + parentOffset.y + el.height / 2 + window.scrollY),
+      };
+    }
 
-        getOffset(${nodeSelector})
-      `;
+    getOffset(${nodeSelector})
+  `;
 
-      return module.exports.retry(timeout, 'setNodeValue', () => (
-        Promise
-          .bind(this)
-          .then(() => Runtime.evaluate({
-            includeCommandLineAPI: true,
-            expression,
-            returnByValue: true,
-          }))
-          .then(({ result, exceptionDetails }) => {
-            if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
-            pino.debug('Completed evaluate', result.value);
-            return result.value;
-          })
-          .tap((coordinates) => Input.dispatchMouseEvent({ type: 'mouseMoved', ...coordinates }))
-          .tap((coordinates) => Input.dispatchMouseEvent({
-            type: 'mousePressed', button: 'left', clickCount: 1, ...coordinates,
-          }))
-          .tap((coordinates) => Input.dispatchMouseEvent({
-            type: 'mouseReleased', button: 'left', clickCount: 1, ...coordinates,
-          }))
-      ));
+  return retry(timeout, 'setNodeValue', async () => {
+    const { result, exceptionDetails } = await Runtime.evaluate({
+      includeCommandLineAPI: true,
+      expression,
+      returnByValue: true,
     });
-};
+
+    if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
+    pino.debug('Completed evaluate', result.value);
+    const coordinates = result.value;
+
+    await Input.dispatchMouseEvent({ type: 'mouseMoved', ...coordinates });
+    await Input.dispatchMouseEvent({
+      type: 'mousePressed', button: 'left', clickCount: 1, ...coordinates,
+    });
+    await Input.dispatchMouseEvent({
+      type: 'mouseReleased', button: 'left', clickCount: 1, ...coordinates,
+    });
+
+    return coordinates;
+  });
+}
 
 /**
  * Captures redirect to URL
@@ -387,17 +365,17 @@ module.exports.submit = function submit(selector, timeout = 30000) {
  * @param  {Number} [timeout=30000]
  * @return {Promise<String>}
  */
-module.exports.captureRedirect = function captureRedirect(url, timeout = 30000) {
+export function captureRedirect(url, timeout = 30000) {
   const { Network } = this.protocol;
 
-  return Promise.fromCallback((next) => {
+  return new Promise((resolve, reject) => {
     Network.requestWillBeSent((params) => {
-      if (url.test(params.request.url)) next(null, params.request.url);
+      if (url.test(params.request.url)) resolve(params.request.url);
     });
 
-    setTimeout(next, timeout, new Error(`failed to redirect to ${url}`));
+    global.setTimeout(reject, timeout, new Error(`failed to redirect to ${url}`));
   });
-};
+}
 
 /**
  * Captures response
@@ -405,20 +383,20 @@ module.exports.captureRedirect = function captureRedirect(url, timeout = 30000) 
  * @param {number} [timeout=30000]
  * @return {Promise<Object>}
  */
-module.exports.captureResponse = function captureResponse(url, timeout = 30000) {
+export function captureResponse(url, timeout = 30000) {
   const { Network } = this.protocol;
-  return Promise.fromCallback((next) => {
+  return new Promise((resolve, reject) => {
     Network.responseReceived((params) => {
       pino.debug('response:', params);
       if (url.test(params.response.url)) {
         const { response, requestId } = params;
-        next(null, { ...response, requestId });
+        resolve({ ...response, requestId });
       }
     });
 
-    setTimeout(next, timeout, new Error(`failed to get response: ${url.toString()}`));
+    setTimeout(reject, timeout, new Error(`failed to get response: ${url.toString()}`));
   });
-};
+}
 
 /**
  * Captures response and returns body
@@ -427,34 +405,26 @@ module.exports.captureResponse = function captureResponse(url, timeout = 30000) 
  * @param {number}
  * @return {Promise<string>}
  */
-module.exports.captureResponseBody = function captureResponseBody(url, code = 200, timeout = 30000) {
+export async function captureResponseBody(url, code = 200, timeout = 30000) {
   const { Network } = this.protocol;
 
-  return Promise
-    .bind(this, [url, timeout])
-    .spread(module.exports.captureResponse)
-    .then((response) => Promise.props({
-      // if we fail to fetch it -> just print error
-      body: Network.getResponseBody({ requestId: response.requestId }).get('body').catch((err) => err.message),
-      // capture status code
-      status: response.status,
-    }))
-    .then(({ body, status }) => {
-      assert.equal(status, code, `Response code is ${status}. Body: ${body}`);
-      return body;
-    });
-};
+  const { status, requestId } = await captureResponse.call(this, url, timeout);
+  const body = await Network.getResponseBody({ requestId }).get('body').catch((err) => err.message);
+
+  assert.equal(status, code, `Response code is ${status}. Body: ${body}`);
+  return body;
+}
 
 /**
  * Scrolls Browser window to top
  * @return {Promise}
  */
-module.exports.scrollTo = function scrollTo(x = 0, y = 0) {
+export function scrollTo(x = 0, y = 0) {
   const { Runtime } = this.protocol;
   return Runtime.evaluate({
     expression: `window.scrollTo(${x}, ${y})`,
   });
-};
+}
 
 /**
  * Executes expression in current context and returns data by value, unless overwritten by opts.
@@ -462,18 +432,19 @@ module.exports.scrollTo = function scrollTo(x = 0, y = 0) {
  * @param  {Object} [opts={}] - Runtime.evaluate opts.
  * @returns {Promise<mixed>}
  */
-module.exports.exec = function exec(expression, opts = {}) {
+export async function exec(expression, opts = {}) {
   const { Runtime } = this.protocol;
 
-  return Runtime
-    .evaluate({
-      returnByValue: true,
-      includeCommandLineAPI: true,
-      ...opts,
-      expression,
-    })
-    .then(({ result, exceptionDetails }) => {
-      if (exceptionDetails) throw new Error(exceptionDetails.exception.description);
-      return result.value;
-    });
-};
+  const { result, exceptionDetails } = await Runtime.evaluate({
+    returnByValue: true,
+    includeCommandLineAPI: true,
+    ...opts,
+    expression,
+  });
+
+  if (exceptionDetails) {
+    throw new Error(exceptionDetails.exception.description);
+  }
+
+  return result.value;
+}

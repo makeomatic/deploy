@@ -40,3 +40,4 @@ ss/*.jpeg
 
 # IDEs
 .idea
+.pnpm-store

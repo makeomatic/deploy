@@ -2,36 +2,34 @@
  * Builds docker images
  */
 
-const fs = require('fs');
-const {
-  exec,
-  echo,
-  exit,
-  ShellString,
-  rm,
-} = require('shelljs');
+import fs from 'node:fs/promises';
+import { $ } from 'execa';
+import { handler as dockerHandler } from './_handler.js';
 
-exports.command = 'build';
-exports.desc = 'builds docker image for a project';
-exports.handler = (argv) => {
-  require('../docker').handler(argv);
+export const command = 'build';
+export const desc = 'builds docker image for a project';
+export const handler = async (argv) => {
+  dockerHandler(argv);
 
   const { project, mainTag } = argv;
 
   // prepare variables
   const tmpDockerfile = `${process.cwd()}/Dockerfile.${project}`;
-  const dockerfile = fs
-    .readFileSync(argv.docker_file, 'utf8')
-    .replace(/\$NODE_VERSION/g, argv.node)
-    .replace(/\$NODE_ENV/g, argv.env);
+  const dockerfile = await fs
+    .readFile(argv.docker_file, 'utf8')
+    .then((file) => (
+      file
+        .replace(/\$NODE_VERSION/g, argv.node)
+        .replace(/\$NODE_ENV/g, argv.env)
+    ));
 
   // write temporary dockerfile
-  ShellString(dockerfile).to(tmpDockerfile);
+  await fs.writeFile(tmpDockerfile, dockerfile);
 
   // try running compile before hand
-  if (argv.pkg.scripts.compile && exec('npm run compile').code !== 0) {
-    echo('Error: failed to run compile');
-    exit(1);
+  if (argv.pkg.scripts.compile && await $`npm run compile`) {
+    console.log('Error: failed to run compile');
+    process.exit(1);
   }
 
   const args = [
@@ -61,16 +59,14 @@ exports.handler = (argv) => {
   }
 
   // start builder
-  const command = `${args.join(' ')} ${context}`;
-  echo(command);
-  const build = exec(command);
+  const build = await $({ stdio: 'inherit' })`${args} ${context}`;
 
   // cleanup right away
-  rm(tmpDockerfile);
+  await fs.unlink(tmpDockerfile);
 
   // print error if shit happened
   if (build.code !== 0) {
-    echo('Error: failed to build docker image');
-    exit(1);
+    console.log('Error: failed to build docker image');
+    process.exit(1);
   }
 };

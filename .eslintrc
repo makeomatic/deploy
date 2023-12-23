@@ -1,7 +1,12 @@
 {
   "extends": "makeomatic",
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
   "rules": {
     "no-unused-expressions": 0,
-    "object-curly-newline": 0
+    "object-curly-newline": 0,
+    "import/extensions": ["error", "always", { "ignorePackages": true }],
+    "no-console": 0
   }
 }

@@ -1,33 +1,40 @@
+#!/usr/bin/env node
+
 /**
  * port used to launch test runner
  */
-const { PassThrough, compose } = require('stream');
-const Fastify = require('fastify').default;
-const { Type } = require('@sinclair/typebox');
-const execa = require('execa');
-const { serializeError } = require('serialize-error');
-const id = require('hyperid')({ urlSafe: true });
-const logger = require('pino')();
+import { PassThrough, compose } from 'stream';
+import Fastify from 'fastify';
+import { Type } from '@sinclair/typebox';
+import { execa, execaCommand } from 'execa';
+import { serializeError } from 'serialize-error';
+import hyperid from 'hyperid';
+import Pino from 'pino';
+import compress from '@fastify/compress';
+
+const id = hyperid({ urlSafe: true });
+const logger = Pino();
 
 const Command = Type.Strict(Type.Object({
   file: Type.String(),
   args: Type.Optional(Type.Array(Type.String({ minLength: 1 }))),
   timeout: Type.Optional(Type.Number({ default: 0 })),
   user: Type.Optional(Type.String()),
+  shell: Type.Optional(Type.Boolean({ default: false })),
 }));
 
 const fastify = Fastify({
   logger: false,
 });
 
-fastify.register(require('@fastify/compress'));
+await fastify.register(compress);
 
 const uidCache = Object.create(null);
 const hasOwnProperty = Object.prototype.hasOwnProperty.bind(uidCache);
 
 fastify.post('/exec', { schema: { body: Command } }, async (request, reply) => {
-  const { file, args, timeout, user } = request.body;
-  const opts = { all: true, buffer: false, timeout };
+  const { file, args, timeout, user, shell } = request.body;
+  const opts = { all: true, buffer: false, timeout, shell };
 
   if (user) {
     if (!hasOwnProperty(user)) {
@@ -38,7 +45,7 @@ fastify.post('/exec', { schema: { body: Command } }, async (request, reply) => {
 
   const subprocess = args
     ? execa(file, args, opts)
-    : execa.command(file, opts);
+    : execaCommand(file, opts);
 
   reply.type('text/plain');
 
@@ -70,11 +77,10 @@ const opts = {
   writableAll: true,
 };
 
-fastify.listen(opts, (err) => {
-  if (err) {
-    logger.error({ err }, 'failed to start fastify');
-    process.exit(1);
-  }
-
+try {
+  await fastify.listen(opts);
   logger.info({ socketId: `fastify.${sockId}.sock` }, 'socket');
-});
+} catch (err) {
+  logger.error({ err }, 'failed to start fastify');
+  process.exit(1);
+}

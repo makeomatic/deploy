@@ -1,13 +1,14 @@
 /* eslint-disable no-template-curly-in-string */
+import { userInfo } from 'node:os';
 
-module.exports = {
-  nycCoverage: false,
-  test_framework: 'jest --coverage --coverageDirectory <coverageDirectory> --runTestsByPath --maxWorkers=50% --colors',
+const { uid } = userInfo();
+
+export default {
+  test_framework: 'c8 node --test',
   tests: '__tests__/*.js',
   auto_compose: true,
-  node: '18',
+  node: '20.10',
   tester_flavour: 'chrome-tester',
-  mirror: process.platform !== 'darwin',
   services: [
     'redisSentinel',
     'redisCluster',
@@ -29,7 +30,12 @@ module.exports = {
       },
     },
   },
-  euser: 'root',
-  tuser: 'node',
-  arbitrary_exec: ['apk add git'],
+  euser: 0,
+  tuser: uid,
+  arbitrary_exec: [
+    'apk add git',
+    process.env.flavour === 'http'
+      ? ['/bin/sh', '-c', `addgroup $(getent passwd ${uid} | cut -d: -f1) node`] // child_process.exec
+      : ['addgroup', `$(getent passwd ${uid} | cut -d: -f1)`, 'node'], // docker exec /bin/sh -c "<command>"
+  ],
 };

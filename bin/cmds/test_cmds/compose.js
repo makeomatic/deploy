@@ -1,21 +1,38 @@
-const npmPath = require('npm-path');
-const onDeath = require('death')({ SIGHUP: true, exit: true });
-const { exec, echo, which } = require('shelljs');
-const execa = require('execa');
-const fs = require('fs');
-const { resolve } = require('path');
+import npmPath from 'npm-path';
+import death from 'death';
+import { execa, $ } from 'execa';
+import fs from 'node:fs';
+import { resolve } from 'node:path';
+import { handler as autoComposeHandler } from './auto-compose.js';
 
 const isWin = process.platform === 'win32';
+const onDeath = death({ SIGHUP: true, exit: true });
 
-exports.command = 'compose';
-exports.desc = 'installs compose on the system';
-exports.handler = async (argv) => {
+const which = async (cmd) => {
+  try {
+    const { stdout = '' } = await $({ stripFinalNewline: true })`which ${cmd}`;
+    return stdout;
+  } catch (err) {
+    return null;
+  }
+};
+
+export const command = 'compose';
+export const desc = 'installs compose on the system';
+export const handler = async (argv) => {
   npmPath.set();
 
   // verify if we have compose or not
-  const docker = which('docker');
-  const dockerComposeBin = which('docker-compose');
-  const mutagen = which('mutagen-compose');
+  const [docker, dockerComposeBin, mutagen] = await Promise.all([
+    which('docker'),
+    which('docker-compose'),
+    which('mutagen-compose'),
+  ]);
+
+  if (!docker) {
+    throw new Error('docker must be installed, can\'t find it with `which`');
+  }
+
   const compose = mutagen || dockerComposeBin || docker;
   const composeArgs = compose === docker ? ['compose'] : [];
   const originalDockerCompose = argv.docker_compose;
@@ -55,7 +72,7 @@ exports.handler = async (argv) => {
    * Generates dynamic docker-compose file based on the presets
    */
   if (argv.auto_compose) {
-    await require('./auto-compose').handler(argv);
+    await autoComposeHandler(argv);
     const autoComposeFile = argv.docker_compose;
 
     dockerComposeFiles.unshift(autoComposeFile);
@@ -75,24 +92,24 @@ exports.handler = async (argv) => {
 
     // allows to exec arbitrary code on exit
     if (argv.on_fail && signal === 'exit' && code !== 0) {
-      exec(argv.on_fail);
+      $({ stdio: 'inherit' }).sync`${argv.on_fail}`;
     }
 
-    const cleanup = argv.mutagenVolumeExternal ? 'down' : 'down -v';
+    const cleanup = argv.mutagenVolumeExternal ? ['down'] : ['down', '-v'];
     if (argv.no_cleanup !== true && argv.onlyPrepare !== true) {
-      echo(`\nAutomatically cleaning up after ${signal}\n`);
-      exec(`${dockerCompose} ${cleanup} --remove-orphans; true`);
+      console.log(`\nAutomatically cleaning up after ${signal}\n`);
+      $({ reject: false, stdio: 'inherit' }).sync`${argv.compose} ${argv.composeArgs} ${cleanup} --remove-orphans`;
 
       if (argv.auto_compose) {
-        const deleteCmd = (isWin ? 'del ' : 'rm ') + argv.docker_compose;
-        echo(deleteCmd);
-        exec(deleteCmd);
+        const deleteCmd = [(isWin ? 'del' : 'rm'), argv.docker_compose];
+        console.log(deleteCmd.join(' '));
+        $({ reject: false }).sync`${deleteCmd}`;
       }
 
       // force exit now
       if (signal === 'exit') process.exit(code || 0);
     } else {
-      echo(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} ${cleanup} --remove-orphans;\n`);
+      console.log(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} ${cleanup} --remove-orphans;\n`);
     }
   }
 

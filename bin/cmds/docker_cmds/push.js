@@ -2,17 +2,17 @@
  * Builds docker images
  */
 
-const assert = require('assert');
-const { exec } = require('shelljs');
+import { $ } from 'execa';
+import { handler as dockerHandler } from './_handler.js';
 
-exports.command = 'push';
-exports.desc = 'pushes previously build docker images';
-exports.handler = (argv) => {
-  require('../docker').handler(argv);
-
+export const command = 'push';
+export const desc = 'pushes previously build docker images';
+export const handler = async (argv) => {
+  dockerHandler(argv);
   const { mainTag, tags } = argv;
 
-  [mainTag, ...tags].forEach((tag) => (
-    assert.equal(exec(`docker push ${tag}`).code, 0, 'failed to push')
-  ));
+  for (const tag of [mainTag, ...tags]) {
+    // eslint-disable-next-line no-await-in-loop
+    await $({ stdio: 'inherit' })`'docker push ${tag}`;
+  }
 };
