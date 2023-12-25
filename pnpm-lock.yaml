@@ -12,8 +12,8 @@ dependencies:
     specifier: ^6.5.0
     version: 6.5.0
   '@sinclair/typebox':
-    specifier: ^0.31.28
-    version: 0.31.28
+    specifier: ^0.32.3
+    version: 0.32.3
   '@types/node':
     specifier: ^20.10.5
     version: 20.10.5
@@ -36,8 +36,8 @@ dependencies:
     specifier: ^8.0.1
     version: 8.0.1
   fastify:
-    specifier: ^4.25.1
-    version: 4.25.1
+    specifier: ^4.25.2
+    version: 4.25.2
   get-port:
     specifier: ^7.0.0
     version: 7.0.0
@@ -96,8 +96,8 @@ dependencies:
     specifier: ^3.1.0
     version: 3.1.0
   undici:
-    specifier: ^6.2.0
-    version: 6.2.0
+    specifier: ^6.2.1
+    version: 6.2.1
   yargs:
     specifier: ^17.7.2
     version: 17.7.2
@@ -725,8 +725,8 @@ packages:
       - supports-color
     dev: false
 
-  /@sinclair/typebox@0.31.28:
-    resolution: {integrity: sha512-/s55Jujywdw/Jpan+vsy6JZs1z2ZTGxTmbZTPiuSL2wz9mfzA2gN1zzaqmvfi4pq+uOt7Du85fkiwv5ymW84aQ==}
+  /@sinclair/typebox@0.32.3:
+    resolution: {integrity: sha512-o1OzDySkCSEobAEAVS1SGrzznes9KqPOC3arGfH5rQhOIeokLQYLKQmy68lr979BmPr43v4m9d85ttUSRpHdFA==}
     dev: false
 
   /@sindresorhus/is@4.6.0:
@@ -2276,8 +2276,8 @@ packages:
     resolution: {integrity: sha512-stRHYGeuqpEZTL1Ef0Ovr2ltazUT9g844X5z/zEBFLG8RYlpDiOCIG+ATvYEp+/zmc7sN29mcIMp8gvYplYPIQ==}
     dev: false
 
-  /fastify@4.25.1:
-    resolution: {integrity: sha512-D8d0rv61TwqoAS7lom2tvIlgVMlx88lLsiwXyWNjA7CU/LC/mx/Gp2WAlC0S/ABq19U+y/aRvYFG5xLUu2aMrg==}
+  /fastify@4.25.2:
+    resolution: {integrity: sha512-SywRouGleDHvRh054onj+lEZnbC1sBCLkR0UY3oyJwjD4BdZJUrxBqfkfCaqn74pVCwBaRHGuL3nEWeHbHzAfw==}
     dependencies:
       '@fastify/ajv-compiler': 3.5.0
       '@fastify/error': 3.4.1
@@ -4771,8 +4771,8 @@ packages:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
     dev: false
 
-  /undici@6.2.0:
-    resolution: {integrity: sha512-bglzaehBOLMe+BfK+Gv5Vpwpgdq2skaEBbSH92tcAv37wHHHTEGu43boyfTaHB+mwSo3VjyD/8d+ytPGeqsFIg==}
+  /undici@6.2.1:
+    resolution: {integrity: sha512-7Wa9thEM6/LMnnKtxJHlc8SrTlDmxqJecgz1iy8KlsN0/iskQXOQCuPkrZLXbElPaSw5slFFyKIKXyJ3UtbApw==}
     engines: {node: '>=18.0'}
     dependencies:
       '@fastify/busboy': 2.1.0
