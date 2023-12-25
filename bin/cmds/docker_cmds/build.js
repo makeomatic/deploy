@@ -54,14 +54,10 @@ export const handler = async (argv) => {
   }
 
   // start builder
-  const build = await $({ stdio: 'inherit' })`docker build ${args} ${context}`;
-
-  // cleanup right away
-  await fs.unlink(tmpDockerfile);
-
-  // print error if shit happened
-  if (build.code !== 0) {
-    console.log('Error: failed to build docker image');
-    process.exit(1);
+  try {
+    await $({ stdio: 'inherit' })`docker build ${args} ${context}`;
+  } finally {
+    // cleanup right away
+    await fs.unlink(tmpDockerfile);
   }
 };
