@@ -32,12 +32,7 @@ export const handler = async (argv) => {
     process.exit(1);
   }
 
-  const args = [
-    'docker build',
-    '--squash',
-    `-t ${mainTag}`,
-    `-f ${tmpDockerfile}`,
-  ];
+  const args = ['-t', mainTag, '-f', tmpDockerfile];
 
   const {
     docker_build_args: dba,
@@ -47,7 +42,7 @@ export const handler = async (argv) => {
 
   if (dba && typeof dba === 'object') {
     for (const [prop, value] of Object.entries(dba)) {
-      args.push(`--build-arg ${prop}=${value}`);
+      args.push('--build-arg', `${prop}=${value}`);
     }
   }
 
@@ -59,7 +54,7 @@ export const handler = async (argv) => {
   }
 
   // start builder
-  const build = await $({ stdio: 'inherit' })`${args} ${context}`;
+  const build = await $({ stdio: 'inherit' })`docker build ${args} ${context}`;
 
   // cleanup right away
   await fs.unlink(tmpDockerfile);
