@@ -27,9 +27,8 @@ export const handler = async (argv) => {
   await fs.writeFile(tmpDockerfile, dockerfile);
 
   // try running compile before hand
-  if (argv.pkg.scripts.compile && await $`npm run compile`) {
-    console.log('Error: failed to run compile');
-    process.exit(1);
+  if (argv.pkg.scripts.compile) { {
+    await $({ stdio: 'inherit' })`npm run compile`
   }
 
   const args = ['-t', mainTag, '-f', tmpDockerfile];
