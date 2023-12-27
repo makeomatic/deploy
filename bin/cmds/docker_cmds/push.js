@@ -13,6 +13,6 @@ export const handler = async (argv) => {
 
   for (const tag of [mainTag, ...tags]) {
     // eslint-disable-next-line no-await-in-loop
-    await $({ stdio: 'inherit' })`'docker push ${tag}`;
+    await $({ stdio: 'inherit' })`docker push ${tag}`;
   }
 };
