@@ -9,9 +9,9 @@ import { handler as pushHandler } from './push.js';
 
 export const command = 'release';
 export const desc = 'performs build, tagging and push in one operation';
-export const handler = (argv) => {
+export const handler = async (argv) => {
   dockerHandler(argv);
-  buildHandler(argv);
-  tagHandler(argv);
-  pushHandler(argv);
+  await buildHandler(argv);
+  await tagHandler(argv);
+  await pushHandler(argv);
 };
