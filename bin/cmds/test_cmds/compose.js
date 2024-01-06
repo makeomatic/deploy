@@ -109,7 +109,7 @@ export const handler = async (argv) => {
       // force exit now
       if (signal === 'exit') process.exit(code || 0);
     } else {
-      console.log(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} ${cleanup} --remove-orphans;\n`);
+      console.log(`\nLocal environment detected.\nTo stop containers write:\n\n${dockerCompose} ${cleanup.join(' ')} --remove-orphans;\n`);
     }
   }
 

@@ -149,7 +149,7 @@ for (const [scriptName, name, holder] of scripts) {
   }
 }
 
-await copyConfiguration('.releaserc.json', ['.releaserc.js']);
+await copyConfiguration('.releaserc.json', ['.releaserc.js', '.releaserc.cjs', '.releaserc.mjs', '.releaserc']);
 await copyConfiguration('.commitlintrc.cjs', ['.commitlintrc.cjs', '.commitlintrc.json', '.commitlintrc.mjs']);
 
 if (!(await hasDir('.husky/_'))) {
