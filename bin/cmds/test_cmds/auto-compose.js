@@ -32,9 +32,14 @@ async function tester(compose, argv) {
   const sourceDir = argv.mutagenDir || '${PWD}';
   const mutagenWorkingDir = argv.mutagenWorkingDir || workingDir;
   const workingVolume = `${sourceDir}:${mutagenWorkingDir}`;
+
+  /**
+   * @type {string[]}
+   */
   const volumes = testerConfig.volumes.filter((volume) => volume !== workingVolume);
 
-  volumes.push(
+  // this will allow one to "override" folders inside
+  volumes.unshift(
     argv.isMutagen ? `${argv.mutagenVolumeName}:${mutagenWorkingDir}` : workingVolume
   );
 
