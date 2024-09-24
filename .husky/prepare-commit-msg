@@ -1,6 +1,3 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
 case "$2,$3" in
   merge,)
     ex "+%s/Merge branch '\([^']\+\)'/chore(merge): \1/i" -scwq $1 ;;
