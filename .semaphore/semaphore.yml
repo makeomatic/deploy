@@ -17,9 +17,9 @@ global_job_config:
   prologue:
     commands:
       - set -e
-      - sem-version node 20.10
+      - sem-version node 20
       - corepack enable
-      - corepack install --global pnpm@8.x
+      - corepack install --global pnpm@9.x
       - checkout
       - cache restore node-$(checksum pnpm-lock.yaml)
       - pnpm i --prefer-offline

@@ -22,7 +22,7 @@ const configExplorer = cosmiconfig('mdep', { searchStrategy: 'project' });
 const configResult = await configExplorer.search();
 const config = configResult !== null && !configResult.isEmpty ? configResult.config : {};
 
-yargs(hideBin(process.argv))
+await yargs(hideBin(process.argv))
   .version(false)
   .command(binCommand)
   .command(dockerCommand)
@@ -76,4 +76,4 @@ yargs(hideBin(process.argv))
   .config(config)
   .help()
   .strict()
-  .parse();
+  .parseAsync();

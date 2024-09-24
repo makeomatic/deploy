@@ -20,7 +20,7 @@ import { handler as handlerCompose } from './compose.js';
 const pipeline = promisify(_pipeline);
 const debug = _debug('test');
 
-const execAsync = (cmd, args, opts) => $(opts)`${cmd} ${args}`;
+const execAsync = (cmd, args, opts = {}) => $(opts)`${cmd} ${args}`;
 const echoAndExec = (cmd, args = [], { buffer = false, all = true, ...rest } = {}) => {
   console.log(cmd, ...args);
   if (!buffer && all) {

@@ -23,9 +23,8 @@ export const handler = async (argv) => {
   npmPath.set();
 
   // verify if we have compose or not
-  const [docker, dockerComposeBin, mutagen] = await Promise.all([
+  const [docker, mutagen] = await Promise.all([
     which('docker'),
-    which('docker-compose'),
     which('mutagen-compose'),
   ]);
 
@@ -33,7 +32,7 @@ export const handler = async (argv) => {
     throw new Error('docker must be installed, can\'t find it with `which`');
   }
 
-  const compose = mutagen || dockerComposeBin || docker;
+  const compose = mutagen || docker;
   const composeArgs = compose === docker ? ['compose'] : [];
   const originalDockerCompose = argv.docker_compose;
   const dockerComposeFiles = [];
@@ -95,7 +94,7 @@ export const handler = async (argv) => {
       $({ stdio: 'inherit' }).sync`${argv.on_fail}`;
     }
 
-    const cleanup = argv.mutagenVolumeExternal ? ['down'] : ['down', '-v'];
+    const cleanup = ['down', '-v'];
     if (argv.no_cleanup !== true && argv.onlyPrepare !== true) {
       console.log(`\nAutomatically cleaning up after ${signal}\n`);
       $({ reject: false, stdio: 'inherit' }).sync`${argv.compose} ${argv.composeArgs} ${cleanup} --remove-orphans`;

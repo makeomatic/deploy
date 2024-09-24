@@ -27,6 +27,7 @@ async function tester(compose, argv) {
     ports: [],
     command: defaultCmd,
   }, argv.extras.tester);
+
   const workingDir = testerConfig.working_dir;
   // eslint-disable-next-line no-template-curly-in-string
   const sourceDir = argv.mutagenDir || '${PWD}';
@@ -186,7 +187,6 @@ export const handler = async (argv) => {
 
   // Header of the file
   const compose = {};
-  compose.version = argv.acv;
   compose.networks = {};
   compose.services = {};
   compose.volumes = {};

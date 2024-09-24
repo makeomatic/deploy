@@ -7,7 +7,7 @@ export default {
   test_framework: 'c8 node --test',
   tests: '__tests__/*.js',
   auto_compose: true,
-  node: '20.10',
+  node: '20',
   tester_flavour: 'chrome-tester',
   services: [
     'redisSentinel',

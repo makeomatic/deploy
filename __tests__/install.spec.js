@@ -158,7 +158,7 @@ describe('(pnpm) test installing the package', () => {
     test('returns current node version in module', async () => {
       process.chdir(cwd);
       const { stdout } = await execa('mdep', ['get-config', '--path', 'node'], { buffer: true });
-      assert.equal(stdout, '20.10');
+      assert.equal(stdout, '20');
     });
   });
 
